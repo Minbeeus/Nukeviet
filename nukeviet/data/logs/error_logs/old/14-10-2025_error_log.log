@@ -1,0 +1,172 @@
+[Wed, 15 Oct 2025 00:15:55 +0700] [localhost] [::1] [Error(1): Uncaught Error: Class "nv_db_action_module" not found in D:\xampp\htdocs\nukeviet\modules\tool-slip-management\action_mysql.php:7
+Stack trace:
+#0 D:\xampp\htdocs\nukeviet\admin\modules\functions.php(187): include()
+#1 D:\xampp\htdocs\nukeviet\admin\modules\setup.php(79): nv_setup_data_module('vi', 'tool_slip_manag...', 0)
+#2 D:\xampp\htdocs\nukeviet\admin\index.php(182): require('D:\\xampp\\htdocs...')
+#3 {main}
+  thrown] [FILE: /modules/tool-slip-management/action_mysql.php] [LINE: 7]
+[Wed, 15 Oct 2025 00:19:15 +0700] [localhost] [::1] [User Notice(1024): SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'tool-slip-management' for key 'PRIMARY'] [FILE: /admin/modules/setup.php] [LINE: 75] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+#2  LINE: 75    FILE: /admin/modules/setup.php
+
+[Wed, 15 Oct 2025 00:28:40 +0700] [localhost] [::1] [Warning(2): Undefined variable $lang_module] [FILE: /modules/tool-slip-management/admin.menu.php] [LINE: 11] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+#2  LINE: 29    FILE: /admin/modules/main.php
+#3  LINE: 307   FILE: /themes/admin_default/theme.php
+#4  LINE: 103   FILE: /themes/admin_default/theme.php
+
+[Wed, 15 Oct 2025 00:28:40 +0700] [localhost] [::1] [Warning(2): Undefined variable $lang_module] [FILE: /modules/tool-slip-management/admin.menu.php] [LINE: 12] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+#2  LINE: 29    FILE: /admin/modules/main.php
+#3  LINE: 307   FILE: /themes/admin_default/theme.php
+#4  LINE: 103   FILE: /themes/admin_default/theme.php
+
+[Wed, 15 Oct 2025 00:28:40 +0700] [localhost] [::1] [Warning(2): Undefined variable $lang_module] [FILE: /modules/tool-slip-management/admin.menu.php] [LINE: 13] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+#2  LINE: 29    FILE: /admin/modules/main.php
+#3  LINE: 307   FILE: /themes/admin_default/theme.php
+#4  LINE: 103   FILE: /themes/admin_default/theme.php
+
+[Wed, 15 Oct 2025 00:28:40 +0700] [localhost] [::1] [Warning(2): Undefined variable $lang_module] [FILE: /modules/tool-slip-management/admin.menu.php] [LINE: 14] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+#2  LINE: 29    FILE: /admin/modules/main.php
+#3  LINE: 307   FILE: /themes/admin_default/theme.php
+#4  LINE: 103   FILE: /themes/admin_default/theme.php
+
+[Wed, 15 Oct 2025 00:28:40 +0700] [localhost] [::1] [Warning(2): Undefined variable $lang_module] [FILE: /modules/tool-slip-management/admin.menu.php] [LINE: 15] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+#2  LINE: 29    FILE: /admin/modules/main.php
+#3  LINE: 307   FILE: /themes/admin_default/theme.php
+#4  LINE: 103   FILE: /themes/admin_default/theme.php
+
+[Wed, 15 Oct 2025 00:30:11 +0700] [localhost] [::1] [Warning(2): Undefined array key "tools_manage"] [FILE: /modules/tool-slip-management/admin.menu.php] [LINE: 40] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+#2  LINE: 268   FILE: /admin/modules/setup.php
+#3  LINE: 307   FILE: /themes/admin_default/theme.php
+#4  LINE: 103   FILE: /themes/admin_default/theme.php
+
+[Wed, 15 Oct 2025 00:30:11 +0700] [localhost] [::1] [Warning(2): Undefined array key "slips_manage"] [FILE: /modules/tool-slip-management/admin.menu.php] [LINE: 41] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+#2  LINE: 268   FILE: /admin/modules/setup.php
+#3  LINE: 307   FILE: /themes/admin_default/theme.php
+#4  LINE: 103   FILE: /themes/admin_default/theme.php
+
+[Wed, 15 Oct 2025 00:30:11 +0700] [localhost] [::1] [Warning(2): Undefined array key "maintenance_manage"] [FILE: /modules/tool-slip-management/admin.menu.php] [LINE: 42] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+#2  LINE: 268   FILE: /admin/modules/setup.php
+#3  LINE: 307   FILE: /themes/admin_default/theme.php
+#4  LINE: 103   FILE: /themes/admin_default/theme.php
+
+[Wed, 15 Oct 2025 00:30:11 +0700] [localhost] [::1] [Warning(2): Undefined array key "reports"] [FILE: /modules/tool-slip-management/admin.menu.php] [LINE: 43] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+#2  LINE: 268   FILE: /admin/modules/setup.php
+#3  LINE: 307   FILE: /themes/admin_default/theme.php
+#4  LINE: 103   FILE: /themes/admin_default/theme.php
+
+[Wed, 15 Oct 2025 00:30:24 +0700] [localhost] [::1] [Warning(2): Undefined array key "main"] [FILE: /modules/tool-slip-management/admin/main.php] [LINE: 11] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+
+[Wed, 15 Oct 2025 00:30:24 +0700] [localhost] [::1] [Warning(2): file_get_contents(D:/xampp/htdocs/nukeviet/themes//modules/tool-slip-management\main.tpl): Failed to open stream: No such file or directory] [FILE: /includes/xtemplate.class.php] [LINE: 1333] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+#2  LINE: 18    FILE: /modules/tool-slip-management/admin/main.php
+#3  LINE: 395   FILE: /includes/xtemplate.class.php
+#4  LINE: 506   FILE: /includes/xtemplate.class.php
+#5  LINE: 537   FILE: /includes/xtemplate.class.php
+#6  LINE: 1365  FILE: /includes/xtemplate.class.php
+#7  LINE: 1333  FILE: /includes/xtemplate.class.php
+
+[Wed, 15 Oct 2025 00:30:27 +0700] [localhost] [::1] [Warning(2): Undefined array key "tools_manage"] [FILE: /modules/tool-slip-management/admin/tools.php] [LINE: 99] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+#2  LINE: 23    FILE: /modules/tool-slip-management/admin/tools.php
+
+[Wed, 15 Oct 2025 00:30:27 +0700] [localhost] [::1] [Error(1): Uncaught Error: Call to a member function fetchColumn() on bool in D:\xampp\htdocs\nukeviet\modules\tool-slip-management\models\tools.php:48
+Stack trace:
+#0 D:\xampp\htdocs\nukeviet\modules\tool-slip-management\admin\tools.php(106): get_tools_list(1, 20, '', 0)
+#1 D:\xampp\htdocs\nukeviet\modules\tool-slip-management\admin\tools.php(23): show_tools_list()
+#2 D:\xampp\htdocs\nukeviet\admin\index.php(182): require('D:\\xampp\\htdocs...')
+#3 {main}
+  thrown] [FILE: /modules/tool-slip-management/models/tools.php] [LINE: 48]
+[Wed, 15 Oct 2025 00:33:17 +0700] [localhost] [::1] [Warning(2): Undefined array key "main"] [FILE: /modules/tool-slip-management/admin/main.php] [LINE: 14] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+
+[Wed, 15 Oct 2025 00:39:13 +0700] [localhost] [::1] [Warning(2): Undefined array key "slips_manage"] [FILE: /modules/tool-slip-management/admin/slips.php] [LINE: 39] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+#2  LINE: 28    FILE: /modules/tool-slip-management/admin/slips.php
+
+[Wed, 15 Oct 2025 00:39:13 +0700] [localhost] [::1] [Error(1): Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'nukeviet_db.nv4_vi_tool_slip_management_students' doesn't exist in D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php:544
+Stack trace:
+#0 D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php(544): PDO->query('SELECT s.*, st....', NULL)
+#1 D:\xampp\htdocs\nukeviet\modules\tool-slip-management\models\slips.php(24): NukeViet\Core\Database->query('SELECT s.*, st....')
+#2 D:\xampp\htdocs\nukeviet\modules\tool-slip-management\admin\slips.php(43): get_slips_list(1, 20)
+#3 D:\xampp\htdocs\nukeviet\modules\tool-slip-management\admin\slips.php(28): show_slips_list()
+#4 D:\xampp\htdocs\nukeviet\admin\index.php(182): require('D:\\xampp\\htdocs...')
+#5 {main}
+  thrown] [FILE: /vendor/vinades/nukeviet/Core/Database.php] [LINE: 544]
+[Wed, 15 Oct 2025 00:39:15 +0700] [localhost] [::1] [Warning(2): Undefined array key "maintenance_manage"] [FILE: /modules/tool-slip-management/admin/maintenance.php] [LINE: 33] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+#2  LINE: 22    FILE: /modules/tool-slip-management/admin/maintenance.php
+
+[Wed, 15 Oct 2025 00:39:17 +0700] [localhost] [::1] [Warning(2): Undefined array key "reports"] [FILE: /modules/tool-slip-management/admin/reports.php] [LINE: 10] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+
+[Wed, 15 Oct 2025 00:39:17 +0700] [localhost] [::1] [Error(1): Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'nukeviet_db.nv4_vi_tool_slip_management_students' doesn't exist in D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php:580
+Stack trace:
+#0 D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php(580): PDO->prepare('SELECT\r\n       ...', Array)
+#1 D:\xampp\htdocs\nukeviet\modules\tool-slip-management\models\reports.php(43): NukeViet\Core\Database->prepare('SELECT\r\n       ...')
+#2 D:\xampp\htdocs\nukeviet\modules\tool-slip-management\admin\reports.php(37): get_borrowing_history_report(1759251600, 1760547599)
+#3 D:\xampp\htdocs\nukeviet\admin\index.php(182): require('D:\\xampp\\htdocs...')
+#4 {main}
+  thrown] [FILE: /vendor/vinades/nukeviet/Core/Database.php] [LINE: 580]
+[Wed, 15 Oct 2025 00:45:24 +0700] [localhost] [::1] [Warning(2): Undefined array key "tools_manage"] [FILE: /modules/tool-slip-management/admin/tools.php] [LINE: 101] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+#2  LINE: 25    FILE: /modules/tool-slip-management/admin/tools.php
+
+[Wed, 15 Oct 2025 00:59:51 +0700] [localhost] [::1] [Warning(2): Undefined array key "tools_manage"] [FILE: /modules/tool-slip-management/admin.menu.php] [LINE: 39] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+#2  LINE: 29    FILE: /admin/modules/main.php
+#3  LINE: 307   FILE: /themes/admin_default/theme.php
+#4  LINE: 103   FILE: /themes/admin_default/theme.php
+
+[Wed, 15 Oct 2025 01:02:07 +0700] [localhost] [::1] [Error(1): Uncaught Error: Call to a member function fetchColumn() on bool in D:\xampp\htdocs\nukeviet\modules\tool-slip-management\models\slips.php:18
+Stack trace:
+#0 D:\xampp\htdocs\nukeviet\modules\tool-slip-management\admin\slips.php(43): get_slips_list(1, 20)
+#1 D:\xampp\htdocs\nukeviet\modules\tool-slip-management\admin\slips.php(28): show_slips_list()
+#2 D:\xampp\htdocs\nukeviet\admin\index.php(182): require('D:\\xampp\\htdocs...')
+#3 {main}
+  thrown] [FILE: /modules/tool-slip-management/models/slips.php] [LINE: 18]
+[Wed, 15 Oct 2025 01:51:06 +0700] [localhost] [::1] [Warning(2): Undefined array key "main"] [FILE: /modules/tool-slip-management/admin.menu.php] [LINE: 38] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+#2  LINE: 391   FILE: /admin/settings/system.php
+#3  LINE: 307   FILE: /themes/admin_default/theme.php
+#4  LINE: 103   FILE: /themes/admin_default/theme.php
+
+[Wed, 15 Oct 2025 01:58:11 +0700] [localhost] [::1] [Warning(2): Undefined variable $lang_module] [FILE: /modules/tool-slip-management/admin.menu.php] [LINE: 16] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+#2  LINE: 391   FILE: /admin/settings/system.php
+#3  LINE: 307   FILE: /themes/admin_default/theme.php
+#4  LINE: 103   FILE: /themes/admin_default/theme.php
+
+[Wed, 15 Oct 2025 01:58:11 +0700] [localhost] [::1] [Warning(2): Undefined variable $lang_module] [FILE: /modules/tool-slip-management/admin.menu.php] [LINE: 17] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+#2  LINE: 391   FILE: /admin/settings/system.php
+#3  LINE: 307   FILE: /themes/admin_default/theme.php
+#4  LINE: 103   FILE: /themes/admin_default/theme.php
+
+[Wed, 15 Oct 2025 01:58:11 +0700] [localhost] [::1] [Warning(2): Undefined variable $lang_module] [FILE: /modules/tool-slip-management/admin.menu.php] [LINE: 18] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+#2  LINE: 391   FILE: /admin/settings/system.php
+#3  LINE: 307   FILE: /themes/admin_default/theme.php
+#4  LINE: 103   FILE: /themes/admin_default/theme.php
+
+[Wed, 15 Oct 2025 01:58:11 +0700] [localhost] [::1] [Warning(2): Undefined variable $lang_module] [FILE: /modules/tool-slip-management/admin.menu.php] [LINE: 19] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+#2  LINE: 391   FILE: /admin/settings/system.php
+#3  LINE: 307   FILE: /themes/admin_default/theme.php
+#4  LINE: 103   FILE: /themes/admin_default/theme.php
+
+[Wed, 15 Oct 2025 01:58:11 +0700] [localhost] [::1] [Warning(2): Undefined variable $lang_module] [FILE: /modules/tool-slip-management/admin.menu.php] [LINE: 20] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+#2  LINE: 391   FILE: /admin/settings/system.php
+#3  LINE: 307   FILE: /themes/admin_default/theme.php
+#4  LINE: 103   FILE: /themes/admin_default/theme.php
+

@@ -28,7 +28,7 @@ $sys_info['ftp_support'] = true;
 $sys_info['string_handler'] = 'mb';
 $sys_info['support_cache'] = [];
 $sys_info['php_compress_methods'] = ['deflate' => 'gzdeflate', 'gzip' => 'gzencode', 'x-gzip' => 'gzencode', 'compress' => 'gzcompress', 'x-compress' => 'gzcompress'];
-$sys_info['server_headers'] = [];
+$sys_info['server_headers'] = ['cache-control' => 'private','content-length' => '4882','content-type' => 'text/html; charset=utf-8','server' => 'Microsoft-IIS/10.0'];
 $sys_info['is_http2'] = false;
 $sys_info['http_only'] = false;
 $sys_info['https_only'] = false;
@@ -42,4 +42,4 @@ ini_set('session.gc_maxlifetime', '3600');
 ini_set('user_agent', 'NV4');
 
 $serverInfoUpdated = true;
-$iniSaveTime = 1759904980;
+$iniSaveTime = 1760609208;
