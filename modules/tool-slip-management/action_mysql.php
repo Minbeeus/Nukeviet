@@ -4,9 +4,9 @@ if (!defined('NV_IS_FILE_MODULES'))
     die('Stop!!!');
 
 $sql_drop_module = array();
-$sql_drop_module[] = "DROP TABLE IF EXISTS " . $db_config['prefix'] . "_" . $lang . "_" . $module_data . "_maintenance";
-$sql_drop_module[] = "DROP TABLE IF EXISTS " . $db_config['prefix'] . "_" . $lang . "_" . $module_data . "_slip_details";
-$sql_drop_module[] = "DROP TABLE IF EXISTS " . $db_config['prefix'] . "_" . $lang . "_" . $module_data . "_slips";
+$sql_drop_module[] = "DROP TABLE IF EXISTS " . $db_config['prefix'] . "_" . $lang . "_" . $module_data . "_maintainance_disposal_slips";
+$sql_drop_module[] = "DROP TABLE IF EXISTS " . $db_config['prefix'] . "_" . $lang . "_" . $module_data . "_borrowing_slip_details";
+$sql_drop_module[] = "DROP TABLE IF EXISTS " . $db_config['prefix'] . "_" . $lang . "_" . $module_data . "_borrowing_slips";
 $sql_drop_module[] = "DROP TABLE IF EXISTS " . $db_config['prefix'] . "_" . $lang . "_" . $module_data . "_tools";
 $sql_drop_module[] = "DROP TABLE IF EXISTS " . $db_config['prefix'] . "_" . $lang . "_" . $module_data . "_categories";
 $sql_drop_module[] = "DROP TABLE IF EXISTS " . $db_config['prefix'] . "_" . $lang . "_" . $module_data . "_students";
@@ -14,59 +14,53 @@ $sql_drop_module[] = "DROP TABLE IF EXISTS " . $db_config['prefix'] . "_" . $lan
 $sql_create_module = $sql_drop_module;
 
 $sql_create_module[] = "CREATE TABLE " . $db_config['prefix'] . "_" . $lang . "_" . $module_data . "_categories (
-    id int(11) NOT NULL AUTO_INCREMENT,
-    name varchar(255) NOT NULL,
-    description text,
-    PRIMARY KEY (id)
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
 
 $sql_create_module[] = "CREATE TABLE " . $db_config['prefix'] . "_" . $lang . "_" . $module_data . "_tools (
-    id int(11) NOT NULL AUTO_INCREMENT,
-    category_id int(11) NOT NULL,
-    name varchar(255) NOT NULL,
-    code varchar(100) DEFAULT NULL,
-    description text,
-    status tinyint(1) NOT NULL DEFAULT '1',
-    PRIMARY KEY (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
-
-$sql_create_module[] = "CREATE TABLE " . $db_config['prefix'] . "_" . $lang . "_" . $module_data . "_slips (
-    id int(11) NOT NULL AUTO_INCREMENT,
-    student_id int(11) NOT NULL,
-    admin_id int(11) NOT NULL,
-    borrow_date int(11) unsigned NOT NULL,
-    due_date int(11) unsigned NOT NULL,
-    return_date int(11) unsigned DEFAULT NULL,
-    notes text,
-    status tinyint(1) NOT NULL DEFAULT '0',
-    PRIMARY KEY (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
-
-$sql_create_module[] = "CREATE TABLE " . $db_config['prefix'] . "_" . $lang . "_" . $module_data . "_slip_details (
-    id int(11) NOT NULL AUTO_INCREMENT,
-    slip_id int(11) NOT NULL,
-    tool_id int(11) NOT NULL,
-    quantity int(5) NOT NULL DEFAULT '1',
-    note varchar(255) DEFAULT NULL,
-    PRIMARY KEY (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
-
-$sql_create_module[] = "CREATE TABLE " . $db_config['prefix'] . "_" . $lang . "_" . $module_data . "_maintenance (
-    id int(11) NOT NULL AUTO_INCREMENT,
-    tool_id int(11) NOT NULL,
-    type varchar(50) NOT NULL COMMENT 'maintenance or disposal',
-    reason text,
-    created_date int(11) unsigned NOT NULL,
-    PRIMARY KEY (id)
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    code VARCHAR(50) UNIQUE NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    category_id INT NOT NULL,
+    status TINYINT(1) NOT NULL DEFAULT 1,
+    added_date DATE NOT NULL,
+    FOREIGN KEY (category_id) REFERENCES " . $db_config['prefix'] . "_" . $lang . "_" . $module_data . "_categories(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
 
 $sql_create_module[] = "CREATE TABLE " . $db_config['prefix'] . "_" . $lang . "_" . $module_data . "_students (
-    id int(11) unsigned NOT NULL AUTO_INCREMENT,
-    student_code varchar(50) NOT NULL COMMENT 'Mã học sinh, sinh viên',
-    full_name varchar(255) NOT NULL COMMENT 'Họ tên đầy đủ',
-    class varchar(100) NOT NULL COMMENT 'Lớp',
-    phone_number varchar(10) NOT NULL COMMENT 'Số điện thoại',
-    status tinyint(1) NOT NULL DEFAULT '1' COMMENT '1: Hoạt động, 0: Khóa',
-    PRIMARY KEY (id),
-    UNIQUE KEY student_code (student_code)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Danh sách người mượn dụng cụ';";
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    student_code VARCHAR(50) UNIQUE NOT NULL,
+    full_name VARCHAR(255) NOT NULL,
+    class VARCHAR(100) NOT NULL,
+    phone_number VARCHAR(10) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
+
+$sql_create_module[] = "CREATE TABLE " . $db_config['prefix'] . "_" . $lang . "_" . $module_data . "_borrowing_slips (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    student_id INT NOT NULL,
+    borrow_date DATE NOT NULL,
+    due_date DATE NOT NULL,
+    return_date DATE NULL,
+    status ENUM('borrowing', 'returned', 'overdue') NOT NULL DEFAULT 'borrowing',
+    note TEXT,
+    FOREIGN KEY (student_id) REFERENCES " . $db_config['prefix'] . "_" . $lang . "_" . $module_data . "_students(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
+
+$sql_create_module[] = "CREATE TABLE " . $db_config['prefix'] . "_" . $lang . "_" . $module_data . "_borrowing_slip_details (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    slip_id INT NOT NULL,
+    tool_id INT NOT NULL,
+    FOREIGN KEY (slip_id) REFERENCES " . $db_config['prefix'] . "_" . $lang . "_" . $module_data . "_borrowing_slips(id),
+    FOREIGN KEY (tool_id) REFERENCES " . $db_config['prefix'] . "_" . $lang . "_" . $module_data . "_tools(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";
+
+$sql_create_module[] = "CREATE TABLE " . $db_config['prefix'] . "_" . $lang . "_" . $module_data . "_maintainance_disposal_slips (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    tool_id INT NOT NULL,
+    type ENUM('maintainance', 'disposal') NOT NULL,
+    reason TEXT,
+    create_date DATE NOT NULL,
+    FOREIGN KEY (tool_id) REFERENCES " . $db_config['prefix'] . "_" . $lang . "_" . $module_data . "_tools(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;";

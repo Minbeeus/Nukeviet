@@ -1,59 +1,118 @@
 <!-- BEGIN: main -->
-<link rel="stylesheet" href="{NV_BASE_SITEURL}modules/{MODULE_FILE}/css/main.css">
-<link rel="stylesheet" href="{NV_BASE_SITEURL}modules/{MODULE_FILE}/css/utilities.css">
-<link rel="stylesheet" href="{NV_BASE_SITEURL}modules/{MODULE_FILE}/css/reports.css">
-<div class="panel panel-default">
-    <div class="panel-heading">
-        <h3 class="panel-title">{LANG.reports}</h3>
-    </div>
-    <div class="panel-body">
-        <form action="{FORM_ACTION}" method="get" class="form-inline margin-bottom well">
-            <input type="hidden" name="{NV_LANG_VARIABLE}" value="{NV_LANG_DATA}" />
-            <input type="hidden" name="{NV_NAME_VARIABLE}" value="{MODULE_NAME}" />
-            <input type="hidden" name="{NV_OP_VARIABLE}" value="{OP}" />
-            <div class="form-group">
-                <label for="from_date">{LANG.from_date}</label>
-                <input type="text" class="form-control datepicker" readonly="readonly" placeholder="{LANG.from_date}" name="from_date" id="from_date" value="{FROM_DATE}">
-            </div>
-            <div class="form-group">
-                <label for="to_date">{LANG.to_date}</label>
-                <input type="text" class="form-control datepicker" readonly="readonly" placeholder="{LANG.to_date}" name="to_date" id="to_date" value="{TO_DATE}">
-            </div>
-            <button type="submit" class="btn btn-primary">{LANG.view_report}</button>
-        </form>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="stylesheet" href="{NV_BASE_SITEURL}modules/{MODULE_NAME}/css/main.css">
+<div class="tsm-module">
+<!-- BEGIN: not_installed -->
+<div class="alert alert-warning">
+    <h4>{LANG.module_not_installed}</h4>
+    <p>{MESSAGE}</p>
+</div>
+<!-- END: not_installed -->
+<h2>{LANG.reports}</h2>
 
-        <h4 class="margin-bottom">{LANG.borrowing_history} ({FROM_DATE} - {TO_DATE})</h4>
-        <div class="table-responsive">
-            <table class="table table-striped table-bordered table-hover">
-                <thead>
-                    <tr>
-                        <th class="text-center">{LANG.stt}</th>
-                        <th class="text-center">{LANG.slip_id}</th>
-                        <th>{LANG.borrower}</th>
-                        <th>{LANG.tool}</th>
-                        <th class="text-center">{LANG.borrow_date}</th>
-                        <th class="text-center">{LANG.due_date}</th>
-                        <th class="text-center">{LANG.return_date}</th>
-                        <th class="text-center">{LANG.status}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="text-center">{ROW.stt}</td>
-                        <td class="text-center">{ROW.slip_id}</td>
-                        <td>{ROW.student_name} ({ROW.student_code})</td>
-                        <td>{ROW.tool_name} ({ROW.tool_code})</td>
-                        <td class="text-center">{ROW.borrow_date_formatted}</td>
-                        <td class="text-center">{ROW.due_date_formatted}</td>
-                        <td class="text-center">{ROW.return_date_formatted}</td>
-                        <td class="text-center"><span class="label label-{ROW.status_class}">{ROW.status_text}</span></td>
-                    </tr>
-                    </tbody>
-            </table>
+<div class="form-group">
+    <label>{LANG.date_range}</label>
+    <div class="row">
+        <div class="col-md-3">
+            <input type="date" class="form-control" id="start_date" value="{START_DATE}">
         </div>
-        <div class="alert alert-warning">
-            {LANG.no_data}
+        <div class="col-md-3">
+            <input type="date" class="form-control" id="end_date" value="{END_DATE}">
         </div>
+        <div class="col-md-2">
+            <button type="button" class="btn btn-primary" id="filter-btn">{LANG.filter}</button>
         </div>
+    </div>
+</div>
+
+<h3>{LANG.borrowing_history}</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>{LANG.slip_id}</th>
+            <th>{LANG.student}</th>
+            <th>{LANG.borrow_date}</th>
+            <th>{LANG.due_date}</th>
+            <th>{LANG.return_date}</th>
+            <th>{LANG.status}</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- BEGIN: borrowing_history -->
+        <tr>
+            <td>{BORROWING.id}</td>
+            <td>{BORROWING.full_name} ({BORROWING.student_code})</td>
+            <td>{BORROWING.borrow_date}</td>
+            <td>{BORROWING.due_date}</td>
+            <td>{BORROWING.return_date}</td>
+            <td>{BORROWING.status_text}</td>
+        </tr>
+        <!-- END: borrowing_history -->
+    </tbody>
+</table>
+
+<h3>{LANG.category_borrow_stats}</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>{LANG.category}</th>
+            <th>{LANG.borrow_count}</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- BEGIN: category_stats -->
+        <tr>
+            <td>{STAT.category_name}</td>
+            <td>{STAT.borrow_count}</td>
+        </tr>
+        <!-- END: category_stats -->
+    </tbody>
+</table>
+
+<h3>{LANG.overdue_slips}</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>{LANG.slip_id}</th>
+            <th>{LANG.student}</th>
+            <th>{LANG.due_date}</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- BEGIN: overdue_slips -->
+        <tr>
+            <td>{SLIP.id}</td>
+            <td>{SLIP.full_name} ({SLIP.student_code})</td>
+            <td>{SLIP.due_date}</td>
+        </tr>
+        <!-- END: overdue_slips -->
+    </tbody>
+</table>
+
+<h3>{LANG.maintenance_history}</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>{LANG.tool}</th>
+            <th>{LANG.type}</th>
+            <th>{LANG.reason}</th>
+            <th>{LANG.create_date}</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- BEGIN: maintenance_history -->
+        <tr>
+            <td>{SLIP.tool_name} ({SLIP.tool_code})</td>
+            <td>{SLIP.type_text}</td>
+            <td>{SLIP.reason}</td>
+            <td>{SLIP.create_date}</td>
+        </tr>
+        <!-- END: maintenance_history -->
+    </tbody>
+</table>
+
+<script src="{NV_BASE_SITEURL}modules/{MODULE_NAME}/js/admin.js"></script>
+</div>
+<!-- END: main -->
 </div>
 <!-- END: main -->

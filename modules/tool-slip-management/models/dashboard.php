@@ -6,7 +6,6 @@ if (!defined('NV_ADMIN')) {
 
 /**
  * Lấy tổng số lượng dụng cụ theo từng trạng thái
- * @return array Mảng chứa các số liệu thống kê
  */
 function get_tool_stats()
 {

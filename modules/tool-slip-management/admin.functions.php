@@ -6,34 +6,31 @@ if (!defined('NV_ADMIN') or !defined('NV_MAINFILE') or !defined('NV_IS_MODADMIN'
 
 define('NV_IS_FILE_ADMIN', true);
 
-/**
- * Khai báo các function được phép truy cập trong admin
- */
+/** 
+* Khai báo các function được phép truy cập trong admin
+*/
 $allow_func = array(
-    'main',         // Trang chính, dashboard
-    'tools',        // Quản lý công cụ, dụng cụ
-    'slips',        // Quản lý phiếu mượn/trả
-    'maintenance', // Quản lý bảo trì, sửa chữa
-    'reports',      // Xem báo cáo
-    'ajax'          // Xử lý các yêu cầu ajax
+'main',         // Trang chính, dashboard
+'tools',        // Quản lý công cụ, dụng cụ
+'borrowing',    // Quản lý phiếu mượn/trả
+'maintenance',  // Quản lý bảo trì, sửa chữa
+'reports'       // Xem báo cáo
 );
 
-/**
- * Định nghĩa các trạng thái của phiếu
- */
-define('TOOL_SLIP_STATUS_BORROWING', 0); // Đang mượn
-define('TOOL_SLIP_STATUS_RETURNED', 1);  // Đã trả
-define('TOOL_SLIP_STATUS_LATE', 2);      // Trễ hẹn
-define('TOOL_SLIP_STATUS_LOST', 3);      // Báo mất
+/** 
+* Định nghĩa các trạng thái của phiếu mượn
+*/
+define('TOOL_SLIP_STATUS_BORROWING', 'borrowing'); // Đang mượn
+define('TOOL_SLIP_STATUS_RETURNED', 'returned');   // Đã trả
+define('TOOL_SLIP_STATUS_OVERDUE', 'overdue');     // Quá hạn
 
-/**
+/** 
  * Định nghĩa các trạng thái của công cụ
- */
-define('TOOL_STATUS_AVAILABLE', 1);      // Sẵn sàng cho mượn
-define('TOOL_STATUS_BORROWED', 2);       // Đã được mượn
-define('TOOL_STATUS_MAINTENANCE', 3);    // Đang bảo trì/sửa chữa
-define('TOOL_STATUS_LOST', 4);           // Báo mất
-define('TOOL_STATUS_DISPOSED', 0);       // Đã thanh lý
+*/
+define('TOOL_STATUS_AVAILABLE', 'available');      // Sẵn sàng cho mượn
+define('TOOL_STATUS_BORROWED', 'borrowed');        // Đã được mượn
+define('TOOL_STATUS_MAINTENANCE', 'maintenance');  // Đang bảo trì
+define('TOOL_STATUS_DISPOSED', 'disposed');        // Đã thanh lý
 
 /**
  * Function kiểm tra quyền hạn của admin trong module

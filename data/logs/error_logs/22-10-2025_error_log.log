@@ -1,0 +1,97 @@
+[Wed, 22 Oct 2025 22:03:12 +0700] [localhost] [::1] [Error(1): Uncaught PDOException: SQLSTATE[HY000]: General error: 1194 Table 'nv4_cronjobs' is marked as crashed and should be repaired in D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php:544
+Stack trace:
+#0 D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php(544): PDO->query('SELECT * FROM n...', NULL)
+#1 D:\xampp\htdocs\nukeviet\includes\core\cronjobs.php(17): NukeViet\Core\Database->query('SELECT * FROM n...')
+#2 D:\xampp\htdocs\nukeviet\includes\mainfile.php(376): require('D:\\xampp\\htdocs...')
+#3 D:\xampp\htdocs\nukeviet\index.php(26): require('D:\\xampp\\htdocs...')
+#4 {main}
+  thrown] [FILE: /vendor/vinades/nukeviet/Core/Database.php] [LINE: 544]
+[Wed, 22 Oct 2025 22:03:24 +0700] [localhost] [::1] [Warning(2): Undefined variable $lang_module] [FILE: /modules/tool-slip-management/admin.menu.php] [LINE: 7] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+#2  LINE: 146   FILE: /admin/siteinfo/main.php
+#3  LINE: 307   FILE: /themes/admin_default/theme.php
+#4  LINE: 103   FILE: /themes/admin_default/theme.php
+
+[Wed, 22 Oct 2025 22:03:24 +0700] [localhost] [::1] [Warning(2): Undefined variable $lang_module] [FILE: /modules/tool-slip-management/admin.menu.php] [LINE: 8] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+#2  LINE: 146   FILE: /admin/siteinfo/main.php
+#3  LINE: 307   FILE: /themes/admin_default/theme.php
+#4  LINE: 103   FILE: /themes/admin_default/theme.php
+
+[Wed, 22 Oct 2025 22:03:24 +0700] [localhost] [::1] [Warning(2): Undefined variable $lang_module] [FILE: /modules/tool-slip-management/admin.menu.php] [LINE: 9] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+#2  LINE: 146   FILE: /admin/siteinfo/main.php
+#3  LINE: 307   FILE: /themes/admin_default/theme.php
+#4  LINE: 103   FILE: /themes/admin_default/theme.php
+
+[Wed, 22 Oct 2025 22:03:24 +0700] [localhost] [::1] [Warning(2): Undefined variable $lang_module] [FILE: /modules/tool-slip-management/admin.menu.php] [LINE: 10] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+#2  LINE: 146   FILE: /admin/siteinfo/main.php
+#3  LINE: 307   FILE: /themes/admin_default/theme.php
+#4  LINE: 103   FILE: /themes/admin_default/theme.php
+
+[Wed, 22 Oct 2025 22:03:24 +0700] [localhost] [::1] [Warning(2): Undefined variable $lang_module] [FILE: /modules/tool-slip-management/admin.menu.php] [LINE: 11] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+#2  LINE: 146   FILE: /admin/siteinfo/main.php
+#3  LINE: 307   FILE: /themes/admin_default/theme.php
+#4  LINE: 103   FILE: /themes/admin_default/theme.php
+
+[Wed, 22 Oct 2025 22:05:32 +0700] [localhost] [::1] [Warning(2): Undefined array key "main"] [FILE: /modules/tool-slip-management/admin/main.php] [LINE: 14] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+
+[Wed, 22 Oct 2025 22:05:32 +0700] [localhost] [::1] [Warning(2): Undefined array key "tools_manage"] [FILE: /modules/tool-slip-management/admin/main.php] [LINE: 15] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+
+[Wed, 22 Oct 2025 22:05:32 +0700] [localhost] [::1] [Warning(2): Undefined array key "slips_manage"] [FILE: /modules/tool-slip-management/admin/main.php] [LINE: 16] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+
+[Wed, 22 Oct 2025 22:05:32 +0700] [localhost] [::1] [Warning(2): Undefined array key "maintenance_manage"] [FILE: /modules/tool-slip-management/admin/main.php] [LINE: 17] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+
+[Wed, 22 Oct 2025 22:05:32 +0700] [localhost] [::1] [Warning(2): Undefined array key "reports"] [FILE: /modules/tool-slip-management/admin/main.php] [LINE: 18] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+
+[Wed, 22 Oct 2025 22:05:32 +0700] [localhost] [::1] [Warning(2): Undefined array key "main"] [FILE: /modules/tool-slip-management/admin/main.php] [LINE: 21] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+
+[Thu, 23 Oct 2025 00:12:19 +0700] [localhost] [::1] [Warning(2): Undefined array key "dashboard"] [FILE: /modules/tool-slip-management/admin/main.php] [LINE: 7] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+
+[Thu, 23 Oct 2025 00:21:53 +0700] [localhost] [::1] [Warning(2): Undefined variable $most_borrowed] [FILE: /modules/tool-slip-management/admin/main.php] [LINE: 64] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+
+[Thu, 23 Oct 2025 00:21:56 +0700] [localhost] [::1] [Warning(2): Undefined array key "tools_management"] [FILE: /modules/tool-slip-management/admin/tools.php] [LINE: 7] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+
+[Thu, 23 Oct 2025 00:21:56 +0700] [localhost] [::1] [Warning(2): Undefined array key 1] [FILE: /modules/tool-slip-management/admin/tools.php] [LINE: 148] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+
+[Thu, 23 Oct 2025 00:21:56 +0700] [localhost] [::1] [Warning(2): Undefined variable $status_options] [FILE: /modules/tool-slip-management/admin/tools.php] [LINE: 172] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+
+[Thu, 23 Oct 2025 00:22:05 +0700] [localhost] [::1] [Warning(2): Undefined array key "borrowing_management"] [FILE: /modules/tool-slip-management/admin/borrowing.php] [LINE: 7] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+
+[Thu, 23 Oct 2025 00:22:08 +0700] [localhost] [::1] [Warning(2): Undefined array key "maintenance"] [FILE: /modules/tool-slip-management/admin/maintenance.php] [LINE: 7] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+
+[Thu, 23 Oct 2025 00:22:10 +0700] [localhost] [::1] [Warning(2): Undefined array key "reports"] [FILE: /modules/tool-slip-management/admin/reports.php] [LINE: 7] [TRACE:]
+#1  LINE: 182   FILE: /admin/index.php
+
+[Thu, 23 Oct 2025 00:39:38 +0700] [localhost] [::1] [Error(1): Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'tool_code' in 'where clause' in D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php:580
+Stack trace:
+#0 D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php(580): PDO->prepare('SELECT COUNT(*)...', Array)
+#1 D:\xampp\htdocs\nukeviet\modules\tool-slip-management\admin\tools.php(134): NukeViet\Core\Database->prepare('SELECT COUNT(*)...')
+#2 D:\xampp\htdocs\nukeviet\admin\index.php(182): require('D:\\xampp\\htdocs...')
+#3 {main}
+  thrown] [FILE: /vendor/vinades/nukeviet/Core/Database.php] [LINE: 580]
+[Thu, 23 Oct 2025 00:40:48 +0700] [localhost] [::1] [Error(1): Uncaught Error: Call to undefined function nv_add_css() in D:\xampp\htdocs\nukeviet\modules\tool-slip-management\admin\main.php:14
+Stack trace:
+#0 D:\xampp\htdocs\nukeviet\admin\index.php(182): require()
+#1 {main}
+  thrown] [FILE: /modules/tool-slip-management/admin/main.php] [LINE: 14]
+[Thu, 23 Oct 2025 00:41:56 +0700] [localhost] [::1] [Error(1): Uncaught Error: Call to undefined function nv_add_css() in D:\xampp\htdocs\nukeviet\modules\tool-slip-management\admin\reports.php:19
+Stack trace:
+#0 D:\xampp\htdocs\nukeviet\admin\index.php(182): require()
+#1 {main}
+  thrown] [FILE: /modules/tool-slip-management/admin/reports.php] [LINE: 19]

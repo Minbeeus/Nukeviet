@@ -4,166 +4,268 @@ if (!defined('NV_IS_FILE_ADMIN')) {
     die('Stop!!!');
 }
 
-// FIX: Khai báo các biến toàn cục cần thiết để sử dụng $lang_module, $module_file, và $global_config bên ngoài các hàm
-global $lang_module, $global_config, $module_file, $module_name, $op;
+// Load language
+$langfile = NV_ROOTDIR . '/modules/' . $module_file . '/language/vi.php';
+include $langfile;
 
-// Lấy hành động (action) từ URL, mặc định là 'list' (hiển thị danh sách)
-$action = $nv_Request->get_string('action', 'get', 'list');
-require_once NV_ROOTDIR . '/modules/' . $module_file . '/models/tools.php';
+$page_title = $lang_module['tools_management'];
 
-// Sử dụng switch case để điều hướng
-switch ($action) {
-    case 'add':
-    case 'edit':
-        show_tool_form($action);
-        break;
+$xtpl = new XTemplate('tools.tpl', NV_ROOTDIR . '/themes/' . $global_config['module_theme'] . '/modules/' . $module_file);
+$xtpl->assign('LANG', $lang_module);
+$xtpl->assign('GLANG', $lang_global);
+$xtpl->assign('NV_BASE_ADMINURL', NV_BASE_ADMINURL);
+$xtpl->assign('NV_NAME_VARIABLE', NV_NAME_VARIABLE);
+$xtpl->assign('NV_OP_VARIABLE', NV_OP_VARIABLE);
+$xtpl->assign('MODULE_NAME', $module_name);
+$xtpl->assign('OP', $op);
+$xtpl->assign('NV_BASE_SITEURL', NV_BASE_SITEURL);
 
-    case 'save':
-        save_tool_data();
-        break;
+// CSS loaded in template
 
-    default: // Mặc định là 'list'
-        show_tools_list();
-        break;
-}
+// Định nghĩa options status
+$status_options = array(1 => 'Sẵn có', 2 => 'Đang mượn', 3 => 'Đang bảo trì', 4 => 'Đã thanh lý');
 
-/**
- * Hàm hiển thị form thêm/sửa
- * @param string $action
- */
-function show_tool_form($action)
-{
-    global $nv_Request, $lang_module, $module_file, $module_name, $op, $global_config;
+// Kiểm tra xem bảng có tồn tại không
+$table_name = NV_PREFIXLANG . '_' . $module_data . '_tools';
+$table_exists = $db->query("SHOW TABLES LIKE '" . $table_name . "'")->rowCount() > 0;
 
-    $id = $nv_Request->get_int('id', 'get', 0);
-    $tool = ($id > 0) ? get_tool_by_id($id) : [];
-
-    // Nếu action là edit nhưng không tìm thấy tool, chuyển về trang danh sách
-    if ($id > 0 && empty($tool)) {
-        Header('Location: ' . NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name . '&' . NV_OP_VARIABLE . '=' . $op);
-        die();
-    }
-
-    // FIX: Sử dụng isset() để tránh lỗi Undefined array key nếu lang_module bị thiếu key
-    $add_title = isset($lang_module['add_new_tool']) ? $lang_module['add_new_tool'] : 'Thêm mới';
-    $edit_title = isset($lang_module['edit_tool']) ? $lang_module['edit_tool'] : 'Chỉnh sửa';
-    $page_title = ($action == 'add') ? $add_title : $edit_title;
-
-    $all_categories = get_all_categories();
-
-    // Khởi tạo XTemplate với đường dẫn chuẩn
-    $module_theme = !empty($global_config['module_theme']) ? $global_config['module_theme'] : 'admin_default';
-    $template_path = str_replace(array('\\', '//'), '/', NV_ROOTDIR . '/themes/' . $module_theme . '/modules/' . $module_file);
-    
-    $xtpl = new XTemplate('tools_form.tpl', $template_path);
-    
-    $xtpl->assign('LANG', $lang_module);
-    $xtpl->assign('PAGE_TITLE', $page_title);
-    $xtpl->assign('FORM_ACTION', NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name . '&' . NV_OP_VARIABLE . '=' . $op . '&action=save');
-    $xtpl->assign('TOOL', $tool);
-
-    foreach ($all_categories as $category) {
-        $category['selected'] = (!empty($tool) && $category['id'] == $tool['category_id']) ? ' selected="selected"' : '';
-        $xtpl->assign('CAT', $category);
-        $xtpl->parse('main.category_loop');
-    }
-
-    $xtpl->parse('main');
+if (!$table_exists) {
+    $xtpl->assign('MESSAGE', $lang_module['module_not_installed_message']);
+    $xtpl->parse('main.not_installed');
     $contents = $xtpl->text('main');
-
     include NV_ROOTDIR . '/includes/header.php';
     echo nv_admin_theme($contents);
     include NV_ROOTDIR . '/includes/footer.php';
+    exit;
 }
 
-/**
- * Hàm lưu dữ liệu
- */
-function save_tool_data()
-{
-    global $nv_Request, $module_name, $op;
+// Xử lý form thêm/sửa
+$array = array();
+$error = '';
+$action = $nv_Request->get_title('action', 'post', '');
+$id = $nv_Request->get_int('id', 'get,post', 0);
 
-    $id = $nv_Request->get_int('id', 'post', 0);
-    $data = [
-        'name' => $nv_Request->get_string('name', 'post', ''),
-        'tool_code' => $nv_Request->get_string('tool_code', 'post', ''),
-        'category_id' => $nv_Request->get_int('category_id', 'post', 0),
-        'description' => $nv_Request->get_string('description', 'post', '')
-    ];
-
-    if ($id > 0) { // Cập nhật
-        update_tool($id, $data);
-    } else { // Thêm mới
-        add_new_tool($data);
+if ($action == 'add' || $action == 'edit') {
+    if ($action == 'edit') {
+        $sql = 'SELECT * FROM ' . NV_PREFIXLANG . '_' . $module_data . '_tools WHERE id = :id';
+        $sth = $db->prepare($sql);
+        $sth->bindValue(':id', (int)$id, PDO::PARAM_INT);
+        $sth->execute();
+        $array = $sth->fetch();
+        if (!$array) {
+            nv_redirect_location(NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name . '&' . NV_OP_VARIABLE . '=tools');
+        }
     }
 
-    Header('Location: ' . NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name . '&' . NV_OP_VARIABLE . '=' . $op);
-    die();
-}
+    if ($nv_Request->isset_request('submit', 'post')) {
+        $array['code'] = $nv_Request->get_title('code', 'post', '');
+        $array['name'] = $nv_Request->get_title('name', 'post', '');
+        $array['description'] = $nv_Request->get_editor('description', '', NV_ALLOWED_HTML_TAGS);
+        $array['category_id'] = $nv_Request->get_int('category_id', 'post', 0);
+        $array['status'] = $nv_Request->get_int('status', 'post', 1);
+        $array['added_date'] = $nv_Request->get_title('added_date', 'post', date('Y-m-d'));
 
-/**
- * Hàm hiển thị danh sách
- */
-function show_tools_list()
-{
-    global $nv_Request, $lang_module, $module_file, $module_name, $op, $global_config;
+        if (empty($array['code'])) {
+            $error = $lang_module['error_tool_code'];
+        } elseif (empty($array['name'])) {
+            $error = $lang_module['error_name'];
+        } elseif ($array['category_id'] == 0) {
+            $error = $lang_module['error_category'];
+        } else {
+            if ($action == 'add') {
+                $sql = 'INSERT INTO ' . NV_PREFIXLANG . '_' . $module_data . '_tools (code, name, description, category_id, status, added_date) VALUES (:code, :name, :description, :category_id, :status, :added_date)';
+            } else {
+                $sql = 'UPDATE ' . NV_PREFIXLANG . '_' . $module_data . '_tools SET code = :code, name = :name, description = :description, category_id = :category_id, status = :status, added_date = :added_date WHERE id = :id';
+                $sth->bindParam(':id', $id, PDO::PARAM_INT);
+            }
+            try {
+                $sth = $db->prepare($sql);
+                $sth->bindParam(':code', $array['code'], PDO::PARAM_STR);
+                $sth->bindParam(':name', $array['name'], PDO::PARAM_STR);
+                $sth->bindParam(':description', $array['description'], PDO::PARAM_STR);
+                $sth->bindParam(':category_id', $array['category_id'], PDO::PARAM_INT);
+                $sth->bindParam(':status', $array['status'], PDO::PARAM_INT);
+                $sth->bindParam(':added_date', $array['added_date'], PDO::PARAM_STR);
+                $sth->execute();
+                nv_redirect_location(NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name . '&' . NV_OP_VARIABLE . '=tools');
+            } catch (PDOException $e) {
+                $error = $lang_module['error_save'];
+            }
+        }
+    }
 
-    // FIX: Sử dụng isset() để tránh lỗi Undefined array key nếu lang_module bị thiếu key
-    $page_title = isset($lang_module['tools_manage']) ? $lang_module['tools_manage'] : 'Tool Management';
+    $xtpl->assign('ACTION', $action);
+    $xtpl->assign('DATA', $array);
 
-    $page = $nv_Request->get_int('page', 'get', 1);
+    // Danh sách categories
+    $sql = 'SELECT id, name FROM ' . NV_PREFIXLANG . '_' . $module_data . '_categories ORDER BY name';
+    $categories = $db->query($sql)->fetchAll();
+    foreach ($categories as $category) {
+        $xtpl->assign('CATEGORY', $category);
+        $xtpl->parse('main.form.category');
+    }
+
+    // Status options đã define ở đầu
+    foreach ($status_options as $key => $value) {
+        $xtpl->assign('STATUS_KEY', $key);
+        $xtpl->assign('STATUS_VALUE', $value);
+        $xtpl->assign('STATUS_SELECTED', ($array['status'] == $key) ? 'selected' : '');
+        $xtpl->parse('main.form.status');
+    }
+
+    if ($error) {
+        $xtpl->assign('ERROR', $error);
+        $xtpl->parse('main.form.error');
+    }
+
+    $xtpl->parse('main.form');
+} else {
+    // Danh sách tools
+    // Quick status change handler (via GET: action=change_status&id=...&status=...)
+    $get_action = $nv_Request->get_title('action', 'get', '');
+    if ($get_action == 'change_status') {
+        // Determine if this is an AJAX POST
+        $is_post = $_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'PUT';
+        $change_id = $nv_Request->get_int('id', $is_post ? 'post' : 'get', 0);
+        $new_status = $nv_Request->get_int('status', $is_post ? 'post' : 'get', 0);
+        $result = array('success' => false);
+        if ($change_id > 0 && isset($status_options[$new_status])) {
+            try {
+                $sql = 'UPDATE ' . NV_PREFIXLANG . '_' . $module_data . '_tools SET status = :status WHERE id = :id';
+                $sth = $db->prepare($sql);
+                $sth->bindValue(':status', $new_status, PDO::PARAM_INT);
+                $sth->bindValue(':id', $change_id, PDO::PARAM_INT);
+                $sth->execute();
+
+                $result['success'] = true;
+                $result['updated_status'] = $new_status;
+                $result['updated_status_text'] = $status_options[$new_status];
+                // map class
+                $map = array(1 => 'success', 2 => 'warning', 3 => 'info', 4 => 'danger');
+                $result['updated_status_class'] = $map[$new_status] ?? 'secondary';
+            } catch (PDOException $e) {
+                $result['error'] = $e->getMessage();
+            }
+        }
+
+        if ($is_post) {
+            header('Content-Type: application/json');
+            echo json_encode($result);
+            exit;
+        }
+
+        // fallback for GET links
+        nv_redirect_location(NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name . '&' . NV_OP_VARIABLE . '=tools');
+    }
+
     $per_page = 20;
-    $keyword = $nv_Request->get_string('keyword', 'get', '');
-    $category_id = $nv_Request->get_int('category_id', 'get', 0);
+    $page = $nv_Request->get_int('page', 'get', 1);
+    $base_url = NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name . '&' . NV_OP_VARIABLE . '=tools';
 
-    // Dòng 99 trước đây bị lỗi nằm ở đây: $page_title = $lang_module['tools_manage'];
-    
-    list($tools_list, $total_rows) = get_tools_list($page, $per_page, $keyword, $category_id);
-    $all_categories = get_all_categories();
+    $q = $nv_Request->get_title('q', 'get', '');
+    $category_filter = $nv_Request->get_int('category_id', 'get', 0);
+    $status_filter = $nv_Request->get_int('status', 'get', 0);
 
-    $base_url = NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name . '&' . NV_OP_VARIABLE . '=' . $op . '&keyword=' . $keyword . '&category_id=' . $category_id;
-    $generate_page = nv_generate_page($base_url, $total_rows, $per_page, $page);
+    $where_clauses = [];
+    $params = [];
 
-    // Khởi tạo XTemplate với đường dẫn chuẩn
-    $module_theme = !empty($global_config['module_theme']) ? $global_config['module_theme'] : 'admin_default';
-    $template_path = str_replace(array('\\', '//'), '/', NV_ROOTDIR . '/themes/' . $module_theme . '/modules/' . $module_file);
-    
-    $xtpl = new XTemplate('tools.tpl', $template_path);
-    $xtpl->assign('LANG', $lang_module);
-    $xtpl->assign('MODULE_URL', NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name . '&' . NV_OP_VARIABLE . '=' . $op);
-    $xtpl->assign('KEYWORD', $keyword);
-
-    foreach ($all_categories as $category) {
-        $category['selected'] = ($category['id'] == $category_id) ? ' selected="selected"' : '';
-        $xtpl->assign('CAT', $category);
-        $xtpl->parse('main.category_loop');
+    if (!empty($q)) {
+        $where_clauses[] = '(t.name LIKE :q OR t.code LIKE :q)';
+        $params[':q'] = '%' . $q . '%';
+    }
+    if ($category_filter > 0) {
+        $where_clauses[] = 't.category_id = :category_id';
+        $params[':category_id'] = $category_filter;
+    }
+    if ($status_filter > 0) {
+        $where_clauses[] = 't.status = :status';
+        $params[':status'] = $status_filter;
     }
 
-    // Định nghĩa map trạng thái, đảm bảo không sử dụng các key ngôn ngữ để tránh lỗi nếu ngôn ngữ không tải
-    $status_map = [
-        1 => ['text' => 'Sẵn có', 'class' => 'success'],
-        2 => ['text' => 'Đang mượn', 'class' => 'warning'],
-        3 => ['text' => 'Đang bảo trì', 'class' => 'info'],
-        4 => ['text' => 'Đã hủy', 'class' => 'danger']
-    ];
+    $where_sql = '';
+    if (!empty($where_clauses)) {
+        $where_sql = ' AND ' . implode(' AND ', $where_clauses);
+    }
 
-    foreach ($tools_list as $tool) {
-        $tool['status_text'] = $status_map[$tool['status']]['text'];
-        $tool['status_class'] = $status_map[$tool['status']]['class'];
-        $tool['link_edit'] = NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name . '&' . NV_OP_VARIABLE . '=' . $op . '&action=edit&id=' . $tool['id'];
+    $sql = 'SELECT COUNT(*) FROM ' . NV_PREFIXLANG . '_' . $module_data . '_tools t WHERE 1=1' . $where_sql;
+    $sth = $db->prepare($sql);
+    foreach ($params as $k => $v) {
+        $sth->bindValue($k, $v);
+    }
+    $sth->execute();
+    $num_items = $sth->fetchColumn();
+
+    $sql = 'SELECT t.*, c.name as category_name FROM ' . NV_PREFIXLANG . '_' . $module_data . '_tools t LEFT JOIN ' . NV_PREFIXLANG . '_' . $module_data . '_categories c ON t.category_id = c.id WHERE 1=1' . $where_sql . ' ORDER BY t.id DESC LIMIT :limit OFFSET :offset';
+    $sth = $db->prepare($sql);
+    foreach ($params as $k => $v) {
+        $sth->bindValue($k, $v);
+    }
+    $sth->bindValue(':limit', (int)$per_page, PDO::PARAM_INT);
+    $sth->bindValue(':offset', (int)(($page - 1) * $per_page), PDO::PARAM_INT);
+    $sth->execute();
+    $tools = $sth->fetchAll();
+
+    foreach ($tools as $tool) {
+        $tool['tool_code'] = $tool['code'];
+        $tool['status_text'] = $status_options[$tool['status']] ?? $tool['status'];
+        switch ($tool['status']) {
+            case 1:
+                $tool['status_class'] = 'success';
+                break;
+            case 2:
+                $tool['status_class'] = 'warning';
+                break;
+            case 3:
+                $tool['status_class'] = 'info';
+                break;
+            case 4:
+                $tool['status_class'] = 'danger';
+                break;
+            default:
+                $tool['status_class'] = 'secondary';
+        }
         $xtpl->assign('TOOL', $tool);
-        $xtpl->parse('main.loop');
+        // status options for dropdown
+        foreach ($status_options as $skey => $sval) {
+            $xtpl->assign('STATUS_KEY', $skey);
+            $xtpl->assign('STATUS_VALUE', $sval);
+            $xtpl->parse('main.list.status_option');
+        }
+        $xtpl->parse('main.list.tool');
     }
 
+    $generate_page = nv_generate_page($base_url, $num_items, $per_page, $page);
     if (!empty($generate_page)) {
-        $xtpl->assign('PAGINATION', $generate_page);
-        $xtpl->parse('main.pagination');
+        $xtpl->assign('GENERATE_PAGE', $generate_page);
+        $xtpl->parse('main.list.generate_page');
     }
 
-    $xtpl->parse('main');
-    $contents = $xtpl->text('main');
+    // Filters
+    $xtpl->assign('Q', $q);
+    $xtpl->assign('CATEGORY_FILTER', $category_filter);
+    $xtpl->assign('STATUS_FILTER', $status_filter);
 
-    include NV_ROOTDIR . '/includes/header.php';
-    echo nv_admin_theme($contents);
-    include NV_ROOTDIR . '/includes/footer.php';
+    $sql = 'SELECT id, name FROM ' . NV_PREFIXLANG . '_' . $module_data . '_categories ORDER BY name';
+    $categories = $db->query($sql)->fetchAll();
+    foreach ($categories as $category) {
+        $xtpl->assign('CATEGORY', $category);
+        $xtpl->assign('SELECTED', ($category['id'] == $category_filter) ? 'selected' : '');
+        $xtpl->parse('main.list.category_filter');
+    }
+
+    foreach ($status_options as $key => $value) {
+        $xtpl->assign('STATUS_KEY', $key);
+        $xtpl->assign('STATUS_VALUE', $value);
+        $xtpl->assign('SELECTED', ($key == $status_filter) ? 'selected' : '');
+        $xtpl->parse('main.list.status_filter');
+    }
+
+    $xtpl->parse('main.list');
 }
+
+$xtpl->parse('main');
+$contents = $xtpl->text('main');
+
+include NV_ROOTDIR . '/includes/header.php';
+echo nv_admin_theme($contents);
+include NV_ROOTDIR . '/includes/footer.php';

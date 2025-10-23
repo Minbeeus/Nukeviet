@@ -4,8 +4,8 @@ $module_name = 'tool_slip_management';
 
 $module_version = array(
     'name' => 'Tool Slip Management',
-    'modfuncs' => 'main,tools,slips,maintenance,reports',
-    'submenu' => 'main,tools,slips,maintenance,reports',
+    'modfuncs' => 'main,tools,borrowing,reports',
+    'submenu' => 'main,tools,borrowing,reports',
     'is_sysmod' => 0,
     'virtual' => 0,
     'version' => '1.0.00',
