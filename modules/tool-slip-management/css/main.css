@@ -103,17 +103,18 @@
 .tsm-module table.table thead th { background: #f6f8fa; color: #34495e; border-bottom: 1px solid #e9ecef; font-weight: 600; }
 .tsm-module table.table tbody td { vertical-align: middle; }
 .tsm-module table.table tbody tr:hover { background: #fbfcfd; }
-.tsm-module .table .badge { font-size: 0.75rem; padding: .35em .5em; }
+.tsm-module .table .badge { font-size: 0.95rem; padding: .45em .65em; }
 
 /* Tool status badge (selectable by JS) */
 .tsm-module .tool-status-badge { display: inline-block; min-width: 70px; text-align: center; padding: .35rem .5rem; border-radius: .375rem; font-weight: 600; }
 
 /* Actions */
-.tsm-module .btn { border-radius: 0.375rem; }
-.tsm-module .btn-sm { padding: .35rem .6rem; font-size: .85rem; }
+.tsm-module .btn { border-radius: 0.5rem; }
+.tsm-module .btn-sm { padding: .5rem .9rem; font-size: 1.05rem; }
 .tsm-module .btn-outline-primary { color: #0d6efd; border-color: rgba(13,110,253,.15); }
 
-.tsm-module .btn-group .dropdown-menu { min-width: 10rem; }
+.tsm-module .btn-group { gap: 0.4rem; }
+.tsm-module .btn-group .dropdown-menu { min-width: 11rem; }
 
 /* Form controls */
 .tsm-module .form-control:focus { box-shadow: none; border-color: #8ab4ff; }
@@ -122,6 +123,68 @@
 .tsm-module .card { border: none; border-radius: .5rem; box-shadow: 0 4px 14px rgba(31,45,61,0.04); }
 .tsm-module .card-header { background: #fbfdff; border-bottom: 1px solid #eef2f6; }
 .tsm-module .card-body { padding: 1rem; }
+
+/* Action column larger text */
+.tsm-module td .btn { font-size: 1.05rem; padding: .55rem .8rem; }
+
+/* Modal tweaks */
+.modal-lg { max-width: 900px; }
+.tsm-module .modal-body .form-group label { font-weight: 600; }
+
+/* === BẮT ĐẦU KHỐI MÃ MỚI (SỬA LỖI) === */
+/* Căn giữa, làm to và thoáng hơn cho modal chi tiết */
+
+/* 1. Căn giữa modal theo chiều dọc */
+#tsmActionModal .modal-dialog {
+  display: flex;
+  align-items: center; /* Căn giữa theo chiều dọc */
+  min-height: calc(100% - 1rem); /* Đảm bảo nó chiếm đủ chiều cao */
+}
+
+/* 2. Làm modal to/rộng hơn */
+#tsmActionModal .modal-lg {
+  max-width: 1100px; /* Tăng từ 900px lên 1100px */
+}
+
+/* 3. Tùy chỉnh card *bên trong* modal */
+#tsmActionModal .modal-body .card {
+  /* Vô hiệu hóa style của card vì nó đã ở trong modal */
+  box-shadow: none !important;
+  border: none !important;
+  margin-bottom: 0; /* Bỏ lề mặc định của card */
+}
+
+/* 4. Làm bố cục bên trong (card-body) thoáng hơn */
+#tsmActionModal .modal-body .card-body {
+  padding: 1.5rem 2rem; /* Tăng khoảng đệm */
+}
+
+/* 5. Tăng kích thước chữ và khoảng cách */
+#tsmActionModal .modal-body .card-body p {
+  font-size: 1.1rem; /* Chữ to hơn */
+  margin-bottom: 1.25rem; /* Tăng khoảng cách dòng */
+}
+
+/* 6. Căn chỉnh các nhãn (Mã, Tên, v.v.) */
+#tsmActionModal .modal-body .card-body p strong {
+  color: #333;
+  min-width: 140px; /* Đặt chiều rộng tối thiểu cho nhãn */
+  display: inline-block; /* Cho phép áp dụng min-width */
+  margin-right: 8px; /* Khoảng cách */
+}
+
+/* 7. Định dạng cho ô Mô tả */
+#tsmActionModal .modal-body .card-body .row:last-child div[class*="col-"] div {
+  background: #f9f9f9;
+  border: 1px solid #eef2f6;
+  padding: 1rem;
+  border-radius: 5px;
+  margin-top: 0.5rem;
+  min-height: 100px;
+  line-height: 1.6;
+}
+/* === KẾT THÚC KHỐI MÃ MỚI === */
+
 
 /* Small helpers */
 .tsm-module .text-muted { color: #6c757d !important; }
@@ -140,7 +203,7 @@
 .tsm-module .pagination { justify-content: center; margin-top: 16px; }
 
 /* Minor table spacing improvements */
-.tsm-module .table td, .tsm-module .table th { padding: .65rem .75rem; }
+.tsm-module .table td, .tsm-module .table th { padding: .9rem 1rem; }
 
 /* Badge contrast for warning */
 .tsm-module .badge.bg-warning, .tsm-module .badge-warning { color: #212529 !important; }
@@ -163,6 +226,10 @@
 .tsm-module .most-borrowed-item:last-child { border-bottom: none; }
 
 /* Slightly larger action icon spacing */
-.tsm-module .btn .fas { margin-right: .4rem; }
+.tsm-module .btn .fas { margin-right: .5rem; font-size: 1.05em; }
 
+/* Increase default action icon sizes for clearer affordance */
+.tsm-module .table tbody td .fa, .tsm-module .table tbody td .fas, .tsm-module .table tbody td .far { font-size: 1.12rem; }
 
+/* Make tool-status-badge text larger and more readable */
+.tsm-module .tool-status-badge { font-size: 0.98rem; padding: .45rem .6rem; }

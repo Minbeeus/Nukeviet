@@ -29,11 +29,11 @@
             </li>
             <!-- END: lang -->
             <li class="tip" data-toggle="tooltip" data-placement="bottom" title="{NV_GO_CLIENTSECTOR}">
-                <a href="{NV_GO_CLIENTSECTOR_URL}"> <em class="fa fa-home fa-2x fix"></em></a>
+                <a href="{NV_GO_CLIENTSECTOR_URL}" aria-label="{NV_GO_CLIENTSECTOR}" title="{NV_GO_CLIENTSECTOR}"> <em class="fa fa-home fa-2x fix" aria-hidden="true"></em><span class="visually-hidden">{NV_GO_CLIENTSECTOR}</span></a>
             </li>
             <!-- BEGIN: lang1 -->
             <li class="menu-lang-mobile">
-                <a data-btn="toggleLang" href="#"><em class="fa fa-2x fa-magic fix" aria-hidden="true"></em></a>
+                <a data-btn="toggleLang" href="#" aria-label="Toggle language"><em class="fa fa-2x fa-magic fix" aria-hidden="true"></em><span class="visually-hidden">Toggle language</span></a>
             </li>
             <!-- END: lang1 -->
             <li class="tip admin-info" data-toggle="tooltip" data-placement="bottom" title="<!-- BEGIN: hello_admin -->{HELLO_ADMIN1}<!-- END: hello_admin --><!-- BEGIN: hello_admin3 -->{HELLO_ADMIN3}<!-- END: hello_admin3 --><!-- BEGIN: hello_admin2 -->{HELLO_ADMIN2}<!-- END: hello_admin2 -->">
@@ -44,7 +44,7 @@
             <!-- BEGIN: notification -->
             <li class="dropdown" id="notification-area">
                 <span id="notification" style="display: none"></span>
-                <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown"> <em class="fa fa-bell-o fa-2x fix"></em></a>
+                <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" aria-label="Notifications"> <em class="fa fa-bell-o fa-2x fix" aria-hidden="true"></em><span class="visually-hidden">Notifications</span></a>
                 <div class="dropdown-menu">
                     <div>
                         <div id="notification_load"></div>
@@ -63,7 +63,7 @@
             </li>
             <!-- END: notification -->
             <li class="tip" data-toggle="tooltip" data-placement="bottom" title="{NV_LOGOUT}">
-                <a href="javascript:void(0);" onclick="nv_admin_logout();"> <em class="fa fa-power-off fa-2x fix logout"></em></a>
+                <a href="javascript:void(0);" onclick="nv_admin_logout();" aria-label="{NV_LOGOUT}" title="{NV_LOGOUT}"> <em class="fa fa-power-off fa-2x fix logout" aria-hidden="true"></em><span class="visually-hidden">{NV_LOGOUT}</span></a>
             </li>
         </ul>
     </header>
@@ -72,13 +72,13 @@
             <div class="container-fluid">
                 <div class="navbar-header">
                     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#menu-horizontal">
-                        <span class="sr-only"></span>
+                        <span class="sr-only">Toggle navigation</span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
                     <button id="left-menu-toggle" type="button" class="navbar-toggle" data-target="#left-menu">
-                        <span class="sr-only"></span>
+                        <span class="sr-only">Toggle left menu</span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>

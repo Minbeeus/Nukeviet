@@ -14,7 +14,25 @@ if (!defined('NV_MAINFILE')) {
 }
 
 // Duyệt tất cả các cron đến giờ chạy
-$cron_result = $db->query('SELECT * FROM ' . $db_config['dbsystem'] . '.' . NV_CRONJOBS_GLOBALTABLE . ' WHERE act=1 AND start_time <= ' . NV_CURRENTTIME . ' ORDER BY is_sys DESC');
+        $cron_result = false;
+        try {
+            $cron_result = $db->query('SELECT * FROM ' . $db_config['dbsystem'] . '.' . NV_CRONJOBS_GLOBALTABLE . ' WHERE act=1 AND start_time <= ' . NV_CURRENTTIME . ' ORDER BY is_sys DESC');
+        } catch (\Throwable $e) {
+            // Log DB errors (for example crashed tables) and return a 1x1 image to avoid 500
+            $logMsg = '[' . date('Y-m-d H:i:s') . '] Cron SELECT failed: ' . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n";
+            $logDir = NV_ROOTDIR . '/' . NV_LOGS_DIR;
+            if (!is_dir($logDir)) {
+                @mkdir($logDir, 0755, true);
+            }
+            @file_put_contents($logDir . '/cron_errors.log', $logMsg, FILE_APPEND | LOCK_EX);
+
+            // Output minimal 1x1 GIF and exit to avoid 500 (no GD dependency)
+            $gif = base64_decode('R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==');
+            header('Content-Type: image/gif');
+            echo $gif;
+            exit();
+        }
+
 while ($cron_row = $cron_result->fetch()) {
     // Kiểm tra chính xác cron có đúng thời gian chạy hay chưa
     $cron_allowed = false;
@@ -74,7 +92,19 @@ while ($cron_row = $cron_result->fetch()) {
         file_put_contents($check_run_cronjobs, var_export($cron_row, true));
 
         $params = (!empty($cron_row['params'])) ? array_map('trim', explode(',', $cron_row['params'])) : [];
-        $result2 = call_user_func_array($cron_row['run_func'], $params);
+        // Run the cron safely and catch any exceptions or errors to avoid 500 responses
+        try {
+            $result2 = call_user_func_array($cron_row['run_func'], $params);
+        } catch (\Throwable $e) {
+            // Log the error to logs/cron_errors.log for diagnosis
+            $logMsg = '[' . date('Y-m-d H:i:s') . '] Cron ID ' . $cron_row['id'] . ' run_file=' . $cron_row['run_file'] . ' run_func=' . $cron_row['run_func'] . ' Error: ' . $e->getMessage() . "\n" . $e->getTraceAsString() . "\n";
+            $logDir = NV_ROOTDIR . '/' . NV_LOGS_DIR;
+            if (!is_dir($logDir)) {
+                @mkdir($logDir, 0755, true);
+            }
+            @file_put_contents($logDir . '/cron_errors.log', $logMsg, FILE_APPEND | LOCK_EX);
+            $result2 = false;
+        }
         if (!$result2) {
             nv_insert_notification('settings', 'auto_deactive_cronjobs', ['cron_id' => $cron_row['id']]);
             $db->query('UPDATE ' . $db_config['dbsystem'] . '.' . NV_CRONJOBS_GLOBALTABLE . ' SET act=0, last_time=' . $this_time . ', last_result=0 WHERE id=' . $cron_row['id']);
@@ -98,8 +128,7 @@ while ($cron_row = $cron_result->fetch()) {
     }
 }
 
-$image = imagecreate(1, 1);
-header('Content-type: image/jpg');
-imagejpeg($image, null, 80);
-version_compare(PHP_VERSION, '8.0.0', '<') && imagedestroy($image);
+$gif = base64_decode('R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==');
+header('Content-Type: image/gif');
+echo $gif;
 exit();

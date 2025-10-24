@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="{LANG.Content_Language|default:{NV_LANG_DATA}}">
     <head>
         <title>{NV_SITE_TITLE}</title>
         <meta name="description" content="{SITE_DESCRIPTION}">
@@ -51,5 +51,82 @@
         <![endif]-->
 
         <script type="text/javascript" src="{NV_BASE_SITEURL}{NV_ASSETS_DIR}/js/stickytableheaders/jquery.stickytableheaders.min.js"></script>
+        <script type="text/javascript">
+            // Accessibility runtime fixes for admin theme
+            document.addEventListener('DOMContentLoaded', function () {
+                try {
+                    // Remove empty title attributes which trigger accessibility warnings
+                    document.querySelectorAll('[title=""]').forEach(function (el) { el.removeAttribute('title'); });
+
+                    // Ensure dropdown toggles expose aria attributes
+                    document.querySelectorAll('[data-toggle="dropdown"], .dropdown-toggle').forEach(function (t) {
+                        if (!t.hasAttribute('aria-haspopup')) t.setAttribute('aria-haspopup', 'true');
+                        if (!t.hasAttribute('aria-expanded')) t.setAttribute('aria-expanded', 'false');
+                    });
+
+                    // Ensure dropdown menus have role=menu and children role=menuitem when not present
+                    document.querySelectorAll('.dropdown-menu').forEach(function (menu) {
+                        if (!menu.hasAttribute('role')) menu.setAttribute('role', 'menu');
+                        menu.querySelectorAll('a, button, li').forEach(function (it) {
+                            if (!it.hasAttribute('role')) it.setAttribute('role', 'menuitem');
+                        });
+                    });
+
+                    // Ensure any element that declares menuitem/menuitemradio/menuitemcheckbox has a parent role=menu (or menubar)
+                    ['menuitem','menuitemradio','menuitemcheckbox'].forEach(function (roleName) {
+                        document.querySelectorAll('[role="' + roleName + '"]').forEach(function (el) {
+                            var p = el.parentElement;
+                            var found = false;
+                            while (p) {
+                                var r = p.getAttribute && p.getAttribute('role');
+                                if (r === 'menu' || r === 'menubar') { found = true; break; }
+                                p = p.parentElement;
+                            }
+                            if (!found) {
+                                // assign role=menu to the immediate parent if safe
+                                var parent = el.parentElement;
+                                if (parent && !parent.getAttribute('role')) parent.setAttribute('role', 'menu');
+                            }
+                        });
+                    });
+
+                    // Ensure elements with role=group are inside a menubar (assign menubar to nearest parent if missing)
+                    document.querySelectorAll('[role="group"]').forEach(function (g) {
+                        var p = g.parentElement;
+                        var found = false;
+                        while (p) {
+                            var r = p.getAttribute && p.getAttribute('role');
+                            if (r === 'menubar') { found = true; break; }
+                            p = p.parentElement;
+                        }
+                        if (!found) {
+                            var parent = g.parentElement;
+                            if (parent && !parent.getAttribute('role')) parent.setAttribute('role', 'menubar');
+                        }
+                    });
+
+                    // For icon-only links/buttons without visible text, add aria-label or visually-hidden fallback
+                    document.querySelectorAll('a, button').forEach(function (el) {
+                        var txt = (el.textContent || '').trim();
+                        if (!txt) {
+                            var label = el.getAttribute('aria-label') || el.getAttribute('title') || el.getAttribute('data-original-title') || el.getAttribute('data-bs-original-title');
+                            if (label) el.setAttribute('aria-label', label);
+                            else if (!el.hasAttribute('aria-label')) el.setAttribute('aria-label', 'Action');
+
+                            // Add a visually-hidden span for screen readers if none exists
+                            if (!el.querySelector('.visually-hidden')) {
+                                var span = document.createElement('span');
+                                span.className = 'visually-hidden';
+                                span.textContent = label || 'Action';
+                                el.appendChild(span);
+                            }
+                        }
+                    });
+                } catch (e) {
+                    // Fail silently to avoid breaking admin UI
+                    if (window.console && console.warn) console.warn('Admin ARIA fixer error', e);
+                }
+            });
+        </script>
     </head>
     <body>

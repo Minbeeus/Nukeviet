@@ -74,6 +74,9 @@ $lang_module['create_date'] = 'Ngày tạo';
 $lang_module['maintainance'] = 'Bảo trì';
 $lang_module['disposal'] = 'Thanh lý';
 $lang_module['create_maintenance'] = 'Tạo phiếu bảo trì/thanh lý';
+$lang_module['close'] = 'Đóng';
+$lang_module['save'] = 'Lưu';
+$lang_module['edit_slip'] = 'Sửa phiếu';
 
 $lang_module['slip_id'] = 'Mã phiếu';
 
@@ -91,3 +94,24 @@ $lang_module['select_category'] = 'Chọn danh mục';
 $lang_module['select_student'] = 'Chọn học sinh/sinh viên';
 $lang_module['module_not_installed'] = 'Module chưa được cài đặt';
 $lang_module['module_not_installed_message'] = 'Vui lòng cài đặt module trong phần quản trị để tạo bảng dữ liệu trước khi sử dụng.';
+
+$lang_module['view'] = 'Xem';
+$lang_module['view_borrowing_slip'] = 'Xem phiếu mượn';
+$lang_module['slip_details'] = 'Chi tiết phiếu';
+
+$lang_module['student_code'] = 'Mã học sinh/sinh viên';
+$lang_module['student_code_placeholder'] = 'Nhập mã để tra cứu...';
+$lang_module['check'] = 'Kiểm tra';
+$lang_module['searching'] = 'Đang tìm...';
+$lang_module['select_tool'] = 'Chọn công cụ';
+$lang_module['add_tool'] = 'Thêm công cụ';
+$lang_module['remove'] = 'Xóa';
+$lang_module['error_student_code_empty'] = 'Vui lòng nhập mã sinh viên.';
+$lang_module['error_student_not_found'] = 'Không tìm thấy sinh viên với mã này.';
+$lang_module['error_save_success'] = 'Lưu phiếu mượn thành công!';
+$lang_module['add_tool'] = 'Thêm công cụ';
+$lang_module['select_tool'] = 'Chọn công cụ';
+$lang_module['searching'] = 'Đang tìm kiếm';
+$lang_module['error_student_code_empty'] = 'Vui lòng nhập mã sinh viên.';
+$lang_module['error_student_not_found'] = 'Không tìm thấy sinh viên với mã này.';
+$lang_module['error_save_success'] = 'Lưu phiếu mượn thành công!';

@@ -39,10 +39,24 @@ if (!$table_exists) {
     exit;
 }
 
+
+
+
+
+// Ensure sample categories exist
+$sql = 'SELECT COUNT(*) FROM ' . NV_PREFIXLANG . '_' . $module_data . '_categories';
+$count = $db->query($sql)->fetchColumn();
+if ($count == 0) {
+    $sample_categories = ['Máy tính', 'Văn phòng phẩm', 'Công cụ', 'Khác'];
+    foreach ($sample_categories as $name) {
+        $db->query('INSERT INTO ' . NV_PREFIXLANG . '_' . $module_data . '_categories (name) VALUES (' . $db->quote($name) . ')');
+    }
+}
+
 // Xử lý form thêm/sửa
 $array = array();
 $error = '';
-$action = $nv_Request->get_title('action', 'post', '');
+$action = $nv_Request->get_title('action', 'get,post', '');
 $id = $nv_Request->get_int('id', 'get,post', 0);
 
 if ($action == 'add' || $action == 'edit') {
@@ -55,41 +69,77 @@ if ($action == 'add' || $action == 'edit') {
         if (!$array) {
             nv_redirect_location(NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name . '&' . NV_OP_VARIABLE . '=tools');
         }
+        $array['tool_code'] = $array['code'];
     }
 
     if ($nv_Request->isset_request('submit', 'post')) {
-        $array['code'] = $nv_Request->get_title('code', 'post', '');
+        $array['code'] = $nv_Request->get_title('tool_code', 'post', '');
         $array['name'] = $nv_Request->get_title('name', 'post', '');
-        $array['description'] = $nv_Request->get_editor('description', '', NV_ALLOWED_HTML_TAGS);
+        $array['description'] = $nv_Request->get_title('description', 'post', '');
         $array['category_id'] = $nv_Request->get_int('category_id', 'post', 0);
         $array['status'] = $nv_Request->get_int('status', 'post', 1);
-        $array['added_date'] = $nv_Request->get_title('added_date', 'post', date('Y-m-d'));
 
         if (empty($array['code'])) {
-            $error = $lang_module['error_tool_code'];
+            ob_clean();
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => $lang_module['error_tool_code']]);
+            exit;
         } elseif (empty($array['name'])) {
-            $error = $lang_module['error_name'];
+            ob_clean();
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => $lang_module['error_name']]);
+            exit;
         } elseif ($array['category_id'] == 0) {
-            $error = $lang_module['error_category'];
+            ob_clean();
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => $lang_module['error_category']]);
+            exit;
         } else {
             if ($action == 'add') {
-                $sql = 'INSERT INTO ' . NV_PREFIXLANG . '_' . $module_data . '_tools (code, name, description, category_id, status, added_date) VALUES (:code, :name, :description, :category_id, :status, :added_date)';
+                // Check if code exists
+                $check = $db->query('SELECT COUNT(*) FROM ' . NV_PREFIXLANG . '_' . $module_data . '_tools WHERE code = ' . $db->quote($array['code']))->fetchColumn();
+                if ($check > 0) {
+                    ob_clean();
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'message' => 'Mã công cụ đã tồn tại.']);
+                    exit;
+                }
+                // Check if category exists
+                $check_cat = $db->query('SELECT COUNT(*) FROM ' . NV_PREFIXLANG . '_' . $module_data . '_categories WHERE id = ' . $array['category_id'])->fetchColumn();
+                if ($check_cat == 0) {
+                    ob_clean();
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'message' => 'Danh mục không tồn tại.']);
+                    exit;
+                }
+                $sql = 'INSERT INTO ' . NV_PREFIXLANG . '_' . $module_data . '_tools (code, name, description, category_id, status) VALUES (?, ?, ?, ?, ?)';
+                $sth = $db->prepare($sql);
+                $sth->bindParam(1, $array['code'], PDO::PARAM_STR);
+                $sth->bindParam(2, $array['name'], PDO::PARAM_STR);
+                $sth->bindParam(3, $array['description'], PDO::PARAM_STR);
+                $sth->bindParam(4, $array['category_id'], PDO::PARAM_INT);
+                $sth->bindParam(5, $array['status'], PDO::PARAM_INT);
             } else {
-                $sql = 'UPDATE ' . NV_PREFIXLANG . '_' . $module_data . '_tools SET code = :code, name = :name, description = :description, category_id = :category_id, status = :status, added_date = :added_date WHERE id = :id';
-                $sth->bindParam(':id', $id, PDO::PARAM_INT);
+                $sql = 'UPDATE ' . NV_PREFIXLANG . '_' . $module_data . '_tools SET code = ?, name = ?, description = ?, category_id = ?, status = ? WHERE id = ?';
+                $sth = $db->prepare($sql);
+                $sth->bindParam(1, $array['code'], PDO::PARAM_STR);
+                $sth->bindParam(2, $array['name'], PDO::PARAM_STR);
+                $sth->bindParam(3, $array['description'], PDO::PARAM_STR);
+                $sth->bindParam(4, $array['category_id'], PDO::PARAM_INT);
+                $sth->bindParam(5, $array['status'], PDO::PARAM_INT);
+                $sth->bindParam(6, $id, PDO::PARAM_INT);
             }
             try {
-                $sth = $db->prepare($sql);
-                $sth->bindParam(':code', $array['code'], PDO::PARAM_STR);
-                $sth->bindParam(':name', $array['name'], PDO::PARAM_STR);
-                $sth->bindParam(':description', $array['description'], PDO::PARAM_STR);
-                $sth->bindParam(':category_id', $array['category_id'], PDO::PARAM_INT);
-                $sth->bindParam(':status', $array['status'], PDO::PARAM_INT);
-                $sth->bindParam(':added_date', $array['added_date'], PDO::PARAM_STR);
                 $sth->execute();
-                nv_redirect_location(NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name . '&' . NV_OP_VARIABLE . '=tools');
+                ob_clean();
+                header('Content-Type: application/json');
+                echo json_encode(['success' => true, 'message' => 'Cập nhật thành công!']);
+                exit;
             } catch (PDOException $e) {
-                $error = $lang_module['error_save'];
+                ob_clean();
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+                exit;
             }
         }
     }
@@ -102,7 +152,8 @@ if ($action == 'add' || $action == 'edit') {
     $categories = $db->query($sql)->fetchAll();
     foreach ($categories as $category) {
         $xtpl->assign('CATEGORY', $category);
-        $xtpl->parse('main.form.category');
+        $xtpl->assign('CATEGORY_SELECTED', ($category['id'] == $array['category_id']) ? 'selected' : '');
+    $xtpl->parse('main.form.category');
     }
 
     // Status options đã define ở đầu
@@ -119,6 +170,333 @@ if ($action == 'add' || $action == 'edit') {
     }
 
     $xtpl->parse('main.form');
+
+    // If AJAX, return form HTML
+    if ($nv_Request->isset_request('ajax', 'get')) {
+        ob_clean();
+        header('Content-Type: text/html');
+
+        // Build categories options
+        $category_options = '<option value="0">-- Chọn danh mục --</option>';
+        $sql = 'SELECT id, name FROM ' . NV_PREFIXLANG . '_' . $module_data . '_categories ORDER BY name';
+        $categories = $db->query($sql)->fetchAll();
+        foreach ($categories as $cat) {
+            $selected = ($cat['id'] == $array['category_id']) ? 'selected' : '';
+            $category_options .= '<option value="' . $cat['id'] . '" ' . $selected . '>' . $cat['name'] . '</option>';
+        }
+
+        // Build status options
+        $status_options_html = '';
+        foreach ($status_options as $key => $value) {
+            $selected = ($array['status'] == $key) ? 'selected' : '';
+            $status_options_html .= '<option value="' . $key . '" ' . $selected . '>' . $value . '</option>';
+        }
+
+        $form_url = NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name . '&' . NV_OP_VARIABLE . '=tools';
+
+        $form_html = '
+        <form id="edit-tool-form" method="post" action="' . $form_url . '">
+            <input type="hidden" name="action" value="' . $action . '">
+            <input type="hidden" name="id" value="' . $id . '">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="tool_code"><i class="fas fa-hashtag"></i> Mã công cụ</label>
+                        <input type="text" class="form-control" id="tool_code" name="tool_code" value="' . $array['tool_code'] . '" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="name"><i class="fas fa-tag"></i> Tên công cụ</label>
+                        <input type="text" class="form-control" id="name" name="name" value="' . $array['name'] . '" required>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="description"><i class="fas fa-align-left"></i> Mô tả</label>
+                <textarea class="form-control" id="description" name="description" rows="3">' . $array['description'] . '</textarea>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="category_id"><i class="fas fa-folder"></i> Danh mục</label>
+                        <select class="form-control" id="category_id" name="category_id" required>
+                            ' . $category_options . '
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="status"><i class="fas fa-info-circle"></i> Trạng thái</label>
+                        <select class="form-control" id="status" name="status" required>
+                            ' . $status_options_html . '
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group text-right">
+                <button type="button" class="btn btn-secondary" onclick="hideModalById(\'tsmActionModal\', null);">Hủy</button>
+                <button type="button" class="btn btn-success" onclick="submitEditForm()"><i class="fas fa-save"></i> Lưu</button>
+            </div>
+        </form>';
+
+        echo $form_html;
+        exit;
+    }
+} elseif ($action == 'view') {
+    // View tool details
+    $sql = 'SELECT t.*, c.name as category_name FROM ' . NV_PREFIXLANG . '_' . $module_data . '_tools t LEFT JOIN ' . NV_PREFIXLANG . '_' . $module_data . '_categories c ON t.category_id = c.id WHERE t.id = :id';
+    $sth = $db->prepare($sql);
+    $sth->bindValue(':id', (int)$id, PDO::PARAM_INT);
+    $sth->execute();
+    $array = $sth->fetch();
+    if (!$array) {
+        if ($nv_Request->isset_request('ajax', 'get')) {
+            header('Content-Type: application/json');
+            echo json_encode(['error' => 'Tool not found']);
+            exit;
+        }
+        nv_redirect_location(NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name . '&' . NV_OP_VARIABLE . '=tools');
+    }
+    $array['tool_code'] = $array['code'];
+    $array['status_text'] = $status_options[$array['status']] ?? $array['status'];
+    switch ($array['status']) {
+        case 1:
+            $array['status_class'] = 'success';
+            break;
+        case 2:
+            $array['status_class'] = 'warning';
+            break;
+        case 3:
+            $array['status_class'] = 'info';
+            break;
+        case 4:
+            $array['status_class'] = 'danger';
+            break;
+        default:
+            $array['status_class'] = 'secondary';
+    }
+    $array['added_date'] = nv_date('d/m/Y', strtotime($array['added_date'] ?? date('Y-m-d')));
+
+    $xtpl->assign('TOOL', $array);
+    $xtpl->parse('main.view');
+
+    // If AJAX, return HTML
+    if ($nv_Request->isset_request('ajax', 'get')) {
+    ob_clean();
+    header('Content-Type: text/html');
+    $view_html = '
+    <div class="card shadow mb-4">
+    <div class="card-body">
+    <div class="row">
+    <div class="col-md-6">
+    <p><strong>Mã công cụ:</strong> ' . $array['tool_code'] . '</p>
+    <p><strong>Tên công cụ:</strong> ' . $array['name'] . '</p>
+    <p><strong>Danh mục:</strong> ' . $array['category_name'] . '</p>
+    </div>
+    <div class="col-md-6">
+    <p><strong>Trạng thái:</strong> <span class="badge bg-' . $array['status_class'] . '">' . $array['status_text'] . '</span></p>
+    <p><strong>Ngày thêm:</strong> ' . $array['added_date'] . '</p>
+    </div>
+    </div>
+    <div class="row">
+    <div class="col-md-12">
+    <p><strong>Mô tả:</strong></p>
+    <div>' . $array['description'] . '</div>
+    </div>
+    </div>
+    </div>
+    </div>';
+    echo $view_html;
+    exit;
+    }
+} elseif ($action == 'add') {
+    // AJAX form for add tool
+    if ($nv_Request->isset_request('ajax', 'get')) {
+        ob_clean();
+        header('Content-Type: text/html');
+        $array = array('tool_code' => '', 'name' => '', 'description' => '', 'category_id' => 0, 'status' => 1, 'added_date' => date('Y-m-d'));
+        $category_options = '<option value="0">-- Chọn danh mục --</option>';
+        $sql = 'SELECT id, name FROM ' . NV_PREFIXLANG . '_' . $module_data . '_categories ORDER BY name';
+        $categories = $db->query($sql)->fetchAll();
+        foreach ($categories as $cat) {
+            $category_options .= '<option value="' . $cat['id'] . '">' . $cat['name'] . '</option>';
+        }
+        $status_options_html = '';
+        $status_options = array(1 => 'Sẵn có', 2 => 'Đang mượn', 3 => 'Đang bảo trì', 4 => 'Đã thanh lý');
+        foreach ($status_options as $key => $value) {
+            $selected = ($key == 1) ? 'selected' : '';
+            $status_options_html .= '<option value="' . $key . '" ' . $selected . '>' . $value . '</option>';
+        }
+        $form_url = NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name . '&' . NV_OP_VARIABLE . '=tools';
+        $form_html = '
+        <form id="add-tool-form" method="post" action="' . $form_url . '">
+        <input type="hidden" name="action" value="add">
+            <input type="hidden" name="submit" value="submit">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="tool_code"><i class="fas fa-hashtag"></i> Mã công cụ</label>
+                        <input type="text" class="form-control" id="tool_code" name="tool_code" value="' . $array['tool_code'] . '" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="name"><i class="fas fa-tag"></i> Tên công cụ</label>
+                        <input type="text" class="form-control" id="name" name="name" value="' . $array['name'] . '" required>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="description"><i class="fas fa-align-left"></i> Mô tả</label>
+                <textarea class="form-control" id="description" name="description" rows="3">' . $array['description'] . '</textarea>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="category_id"><i class="fas fa-folder"></i> Danh mục</label>
+                        <select class="form-control" id="category_id" name="category_id" required>
+                            ' . $category_options . '
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="status"><i class="fas fa-info-circle"></i> Trạng thái</label>
+                        <select class="form-control" id="status" name="status" required>
+                            ' . $status_options_html . '
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group text-right">
+                <button type="button" class="btn btn-secondary" onclick="hideModalById(\'tsmActionModal\', null);">Hủy</button>
+                <button type="button" class="btn btn-success" onclick="submitAddForm()"><i class="fas fa-save"></i> Lưu</button>
+            </div>
+        </form>';
+        echo $form_html;
+        exit;
+    }
+} elseif ($action == 'maintenance' || $action == 'disposal') {
+    // Get tool data
+    $tool_id = $nv_Request->get_int('tool_id', 'get,post', 0);
+    $sql = 'SELECT t.*, c.name as category_name FROM ' . NV_PREFIXLANG . '_' . $module_data . '_tools t LEFT JOIN ' . NV_PREFIXLANG . '_' . $module_data . '_categories c ON t.category_id = c.id WHERE t.id = :id';
+    $sth = $db->prepare($sql);
+    $sth->bindValue(':id', (int)$tool_id, PDO::PARAM_INT);
+    $sth->execute();
+    $array = $sth->fetch();
+    if (!$array) {
+        if ($nv_Request->isset_request('ajax', 'get')) {
+            header('Content-Type: application/json');
+            echo json_encode(['error' => 'Tool not found']);
+            exit;
+        }
+        nv_redirect_location(NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name . '&' . NV_OP_VARIABLE . '=tools');
+    }
+    $array['tool_code'] = $array['code'];
+    $array['status_text'] = $status_options[$array['status']] ?? $array['status'];
+    switch ($array['status']) {
+        case 1: $array['status_class'] = 'success'; break;
+        case 2: $array['status_class'] = 'warning'; break;
+        case 3: $array['status_class'] = 'info'; break;
+        case 4: $array['status_class'] = 'danger'; break;
+        default: $array['status_class'] = 'secondary';
+    }
+    $array['added_date'] = nv_date('d/m/Y', strtotime($array['added_date'] ?? date('Y-m-d')));
+
+    // Handle POST submit
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $reason = $nv_Request->get_title('reason', 'post', '');
+        if (empty($reason)) {
+            ob_clean();
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Vui lòng nhập lý do.']);
+            exit;
+        }
+        // Confirm in JS, but here just process
+        try {
+            if ($action == 'disposal') {
+                // Update status to 4
+                $sql = 'UPDATE ' . NV_PREFIXLANG . '_' . $module_data . '_tools SET status = 4 WHERE id = ?';
+                $sth = $db->prepare($sql);
+                $sth->bindParam(1, $tool_id, PDO::PARAM_INT);
+                $sth->execute();
+            } elseif ($action == 'maintenance') {
+                // Update status to 3
+                $sql = 'UPDATE ' . NV_PREFIXLANG . '_' . $module_data . '_tools SET status = 3 WHERE id = ?';
+                $sth = $db->prepare($sql);
+                $sth->bindParam(1, $tool_id, PDO::PARAM_INT);
+                $sth->execute();
+            }
+        } catch (PDOException $e) {
+            ob_clean();
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Lỗi cập nhật trạng thái: ' . $e->getMessage()]);
+            exit;
+        }
+
+        // Insert to maintenance table
+        try {
+            $sql = 'INSERT INTO ' . NV_PREFIXLANG . '_' . $module_data . '_maintenance (tool_id, type, reason, created_date) VALUES (?, ?, ?, CURDATE())';
+            $sth = $db->prepare($sql);
+            $sth->bindParam(1, $tool_id, PDO::PARAM_INT);
+            $sth->bindParam(2, $action, PDO::PARAM_STR);
+            $sth->bindParam(3, $reason, PDO::PARAM_STR);
+            $sth->execute();
+        } catch (PDOException $e) {
+            // Ignore if table not exist
+        }
+        ob_clean();
+        header('Content-Type: application/json');
+        echo json_encode(['success' => true, 'message' => 'Thực hiện thành công!']);
+        exit;
+    }
+
+    // If AJAX, return form HTML
+    if ($nv_Request->isset_request('ajax', 'get')) {
+        ob_clean();
+        header('Content-Type: text/html');
+        $title = $action == 'maintenance' ? 'Tạo phiếu bảo trì' : 'Tạo phiếu huỷ';
+        $reason_label = $action == 'maintenance' ? 'Lý do bảo trì' : 'Lý do huỷ';
+        $form_html = '
+        <div class="card shadow mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Mã công cụ:</strong> ' . $array['tool_code'] . '</p>
+                        <p><strong>Tên công cụ:</strong> ' . $array['name'] . '</p>
+                        <p><strong>Danh mục:</strong> ' . $array['category_name'] . '</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Trạng thái:</strong> <span class="badge bg-' . $array['status_class'] . '">' . $array['status_text'] . '</span></p>
+                        <p><strong>Ngày thêm:</strong> ' . $array['added_date'] . '</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <p><strong>Mô tả:</strong></p>
+                        <div>' . $array['description'] . '</div>
+                    </div>
+                </div>
+                <hr>
+                <form id="slip-form" method="post" action="">
+                <input type="hidden" name="action" value="' . $action . '">
+                <input type="hidden" name="tool_id" value="' . $tool_id . '">
+                <input type="hidden" name="submit" value="submit">
+                    <div class="form-group">
+                        <label for="reason">' . $reason_label . ':</label>
+                        <textarea class="form-control" id="reason" name="reason" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group text-right">
+                        <button type="button" class="btn btn-secondary" onclick="hideModalById(\'tsmActionModal\', null);">Hủy</button>
+                        <button type="button" class="btn btn-success" onclick="submitSlipForm()">Lưu</button>
+                    </div>
+                </form>
+            </div>
+        </div>';
+        echo $form_html;
+        exit;
+    }
 } else {
     // Danh sách tools
     // Quick status change handler (via GET: action=change_status&id=...&status=...)
@@ -187,7 +565,7 @@ if ($action == 'add' || $action == 'edit') {
         $where_sql = ' AND ' . implode(' AND ', $where_clauses);
     }
 
-    $sql = 'SELECT COUNT(*) FROM ' . NV_PREFIXLANG . '_' . $module_data . '_tools t WHERE 1=1' . $where_sql;
+    $sql = 'SELECT COUNT(*) FROM ' . NV_PREFIXLANG . '_' . $module_data . '_tools t WHERE 1=1 AND t.status != 4' . $where_sql;
     $sth = $db->prepare($sql);
     foreach ($params as $k => $v) {
         $sth->bindValue($k, $v);
@@ -195,7 +573,7 @@ if ($action == 'add' || $action == 'edit') {
     $sth->execute();
     $num_items = $sth->fetchColumn();
 
-    $sql = 'SELECT t.*, c.name as category_name FROM ' . NV_PREFIXLANG . '_' . $module_data . '_tools t LEFT JOIN ' . NV_PREFIXLANG . '_' . $module_data . '_categories c ON t.category_id = c.id WHERE 1=1' . $where_sql . ' ORDER BY t.id DESC LIMIT :limit OFFSET :offset';
+    $sql = 'SELECT t.*, c.name as category_name FROM ' . NV_PREFIXLANG . '_' . $module_data . '_tools t LEFT JOIN ' . NV_PREFIXLANG . '_' . $module_data . '_categories c ON t.category_id = c.id WHERE 1=1 AND t.status != 4' . $where_sql . ' ORDER BY t.id DESC LIMIT :limit OFFSET :offset';
     $sth = $db->prepare($sql);
     foreach ($params as $k => $v) {
         $sth->bindValue($k, $v);
@@ -245,12 +623,13 @@ if ($action == 'add' || $action == 'edit') {
     $xtpl->assign('CATEGORY_FILTER', $category_filter);
     $xtpl->assign('STATUS_FILTER', $status_filter);
 
+    // Danh sách categories
     $sql = 'SELECT id, name FROM ' . NV_PREFIXLANG . '_' . $module_data . '_categories ORDER BY name';
     $categories = $db->query($sql)->fetchAll();
     foreach ($categories as $category) {
         $xtpl->assign('CATEGORY', $category);
         $xtpl->assign('SELECTED', ($category['id'] == $category_filter) ? 'selected' : '');
-        $xtpl->parse('main.list.category_filter');
+    $xtpl->parse('main.list.category_filter');
     }
 
     foreach ($status_options as $key => $value) {
@@ -261,6 +640,39 @@ if ($action == 'add' || $action == 'edit') {
     }
 
     $xtpl->parse('main.list');
+    $xtpl->parse('add-form-inline');
+
+    // Check if AJAX request for search/filter
+    if ($nv_Request->isset_request('ajax', 'get') && $nv_Request->get_string('ajax', 'get') === 'search') {
+        header('Content-Type: application/json');
+        try {
+            $list_html = $xtpl->text('main.list');
+            echo json_encode(['success' => true, 'html' => $list_html]);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        }
+        exit;
+    }
+
+    // Parse form for modal in list view
+    $sql = 'SELECT id, name FROM ' . NV_PREFIXLANG . '_' . $module_data . '_categories ORDER BY name';
+    $categories = $db->query($sql)->fetchAll();
+    foreach ($categories as $category) {
+        $xtpl->assign('CATEGORY', $category);
+        $xtpl->assign('CATEGORY_SELECTED', '');
+        $xtpl->parse('main.form.category');
+    }
+
+    
+    foreach ($status_options as $key => $value) {
+        $xtpl->assign('STATUS_KEY', $key);
+        $xtpl->assign('STATUS_VALUE', $value);
+        $xtpl->assign('STATUS_SELECTED', '');
+        $xtpl->parse('main.form.status');
+    }
+
+    $xtpl->assign('DATA', array('tool_code' => '', 'name' => '', 'description' => '', 'category_id' => 0, 'status' => 1, 'added_date' => date('Y-m-d')));
+    $xtpl->parse('main.form');
 }
 
 $xtpl->parse('main');

@@ -9,7 +9,7 @@
 </div>
 <!-- END: not_installed -->
 <!-- BEGIN: form -->
-<h2>{LANG.borrowing_management} - {LANG.create_borrowing_slip}</h2>
+<h2>{LANG.create_borrowing_slip}</h2>
 <form method="post" action="">
     <div class="form-group">
         <label>{LANG.student}</label>
@@ -29,11 +29,12 @@
         <input type="date" class="form-control" name="due_date" value="{DATA.due_date}" required>
     </div>
     <div class="form-group">
-        <label>{LANG.tools}</label>
-        <select multiple class="form-control" name="tool_ids[]" required>
-            <!-- BEGIN: tool -->
-            <option value="{TOOL.id}">{TOOL.name} ({TOOL.tool_code})</option>
-            <!-- END: tool -->
+    <label>{LANG.tools}</label>
+    <input type="text" class="form-control mb-2" id="tool-search" placeholder="{LANG.search} {LANG.tools}">
+    <select multiple class="form-control" id="tool-select" name="tool_ids[]" required>
+    <!-- BEGIN: tool -->
+    <option value="{TOOL.id}">{TOOL.name} ({TOOL.tool_code})</option>
+        <!-- END: tool -->
         </select>
     </div>
     <div class="form-group">
@@ -49,9 +50,10 @@
 <!-- END: form -->
 
 <!-- BEGIN: list -->
+<script>console.log('Borrowing list loaded');</script>
 <h2>{LANG.borrowing_management}</h2>
 <div class="mb-3">
-    <a href="{NV_BASE_ADMINURL}index.php?{NV_LANG_VARIABLE}={NV_LANG_DATA}&{NV_NAME_VARIABLE}={MODULE_NAME}&{NV_OP_VARIABLE}=borrowing&action=add" class="btn btn-primary">{LANG.create_borrowing_slip}</a>
+<button id="btn-add-slip" class="btn btn-primary">{LANG.create_borrowing_slip}</button>
 </div>
 
 <table class="table table-striped">
@@ -76,14 +78,17 @@
             <td>{SLIP.tool_count}</td>
             <td>{SLIP.status_text}</td>
             <td>
-                <!-- BEGIN: return_btn -->
-                <form method="post" style="display:inline;">
-                    <input type="hidden" name="action" value="return">
-                    <input type="hidden" name="slip_id" value="{SLIP.id}">
+            <!-- BEGIN: view_btn -->
+            <a href="{NV_BASE_ADMINURL}index.php?{NV_LANG_VARIABLE}={NV_LANG_DATA}&{NV_NAME_VARIABLE}={MODULE_NAME}&{NV_OP_VARIABLE}=borrowing&action=view&id={SLIP.id}" class="btn btn-sm btn-info">{LANG.view}</a>
+            <!-- END: view_btn -->
+            <!-- BEGIN: return_btn -->
+            <form method="post" style="display:inline;">
+                <input type="hidden" name="action" value="return">
+                <input type="hidden" name="slip_id" value="{SLIP.id}">
                     <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('{LANG.confirm_return}')">{LANG.return_tools}</button>
-                </form>
-                <!-- END: return_btn -->
-            </td>
+                 </form>
+                 <!-- END: return_btn -->
+             </td>
         </tr>
         <!-- END: slip -->
     </tbody>
@@ -94,6 +99,46 @@
 <!-- END: generate_page -->
 </div>
 <!-- END: list -->
-<!-- END: main -->
 
-<script src="{NV_BASE_SITEURL}modules/{MODULE_NAME}/js/admin.js"></script>
+<!-- BEGIN: view -->
+<h2>{LANG.view_borrowing_slip}</h2>
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">{LANG.slip_details}</h5>
+        <p><strong>{LANG.slip_id}:</strong> {SLIP.id}</p>
+        <p><strong>{LANG.student}:</strong> {SLIP.full_name} ({SLIP.student_code})</p>
+        <p><strong>{LANG.borrow_date}:</strong> {SLIP.borrow_date}</p>
+        <p><strong>{LANG.due_date}:</strong> {SLIP.due_date}</p>
+        <p><strong>{LANG.return_date}:</strong> {SLIP.return_date}</p>
+        <p><strong>{LANG.status}:</strong> {SLIP.status_text}</p>
+        <p><strong>{LANG.note}:</strong> {SLIP.note}</p>
+        <h6>{LANG.tools}:</h6>
+        <ul>
+            <!-- BEGIN: tool -->
+            <li>{TOOL.name} ({TOOL.code}) - {TOOL.category_name}</li>
+            <!-- END: tool -->
+        </ul>
+    </div>
+</div>
+<a href="{NV_BASE_ADMINURL}index.php?{NV_LANG_VARIABLE}={NV_LANG_DATA}&{NV_NAME_VARIABLE}={MODULE_NAME}&{NV_OP_VARIABLE}=borrowing" class="btn btn-secondary">{GLANG.back}</a>
+<!-- END: view -->
+
+<!-- Modal -->
+<div id="tsmActionModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- END: main -->
+<script>console.log('Inline script executed');</script>
+<script src="/nukeviet/modules/tool-slip-management/js/admin.js"></script>
