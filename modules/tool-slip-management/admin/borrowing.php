@@ -12,7 +12,7 @@ include $langfile;
 // error_reporting(E_ALL);
 // ini_set('display_errors', 1);
 
-$page_title = $lang_module['borrowing_management'];
+$page_title = 'Quản lý phiếu mượn';
 
 $xtpl = new XTemplate('borrowing.tpl', NV_ROOTDIR . '/themes/' . $global_config['module_theme'] . '/modules/' . $module_file);
 $xtpl->assign('LANG', $lang_module);
@@ -38,16 +38,25 @@ if (!$table_exists) {
     exit;
 }
 
+// Update all overdue slips
+$sql_update_overdue = "UPDATE " . NV_PREFIXLANG . '_' . $module_data . "_slips SET status = 2 WHERE status = 0 AND due_date < " . time();
+$db->query($sql_update_overdue);
+
 // Handle return action
 if ($nv_Request->isset_request('action', 'post') && $nv_Request->get_string('action', 'post') == 'return') {
     $slip_id = $nv_Request->get_int('slip_id', 'post', 0);
     if ($slip_id > 0) {
         // ... (Logic trả đồ giữ nguyên, không thay đổi)
-        $db->query("UPDATE " . NV_PREFIXLANG . '_' . $module_data . "_borrowing_slips SET status = 'returned', return_date = '" . date('Y-m-d') . "' WHERE id = " . $slip_id);
-        $tool_ids = $db->query("SELECT tool_id FROM " . NV_PREFIXLANG . '_' . $module_data . "_borrowing_slip_details WHERE slip_id = " . $slip_id)->fetchAll(PDO::FETCH_COLUMN);
+        $stmt = $db->prepare("UPDATE " . NV_PREFIXLANG . '_' . $module_data . "_slips SET status = 1, return_date = ? WHERE id = ?");
+        $stmt->execute([time(), $slip_id]);
+
+        $stmt = $db->prepare("SELECT tool_id FROM " . NV_PREFIXLANG . '_' . $module_data . "_slip_details WHERE slip_id = ?");
+        $stmt->execute([$slip_id]);
+        $tool_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
         if (!empty($tool_ids)) {
-            $in_clause = implode(',', array_map('intval', $tool_ids));
-            $db->query("UPDATE " . NV_PREFIXLANG . '_' . $module_data . "_tools SET status = 1 WHERE id IN (" . $in_clause . ")");
+        $placeholders = str_repeat('?,', count($tool_ids) - 1) . '?';
+        $stmt = $db->prepare("UPDATE " . NV_PREFIXLANG . '_' . $module_data . "_tools SET status = 1 WHERE id IN ($placeholders)");
+            $stmt->execute($tool_ids);
         }
         nv_redirect_location(NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name . '&' . NV_OP_VARIABLE . '=' . $op);
     }
@@ -64,15 +73,16 @@ if ($action == 'add') {
     if ($nv_Request->isset_request('submit', 'post') or $nv_Request->isset_request('ajax_submit', 'post')) {
         // Chú ý: tên input student đã đổi thành 'student_id' (input ẩn)
         $array['student_id'] = $nv_Request->get_int('student_id', 'post', 0);
-        $array['borrow_date'] = $nv_Request->get_title('borrow_date', 'post', date('Y-m-d'));
-        $array['due_date'] = $nv_Request->get_title('due_date', 'post', '');
+        $array['borrow_date'] = strtotime($nv_Request->get_title('borrow_date', 'post', date('Y-m-d')));
+        $array['due_date'] = strtotime($nv_Request->get_title('due_date', 'post', ''));
         $array['note'] = $nv_Request->get_textarea('note', '', NV_ALLOWED_HTML_TAGS);
-        
+        $student_phone = $nv_Request->get_title('student_phone', 'post', '');
+
         // Lấy danh sách tool_ids, loại bỏ các giá trị '0' (không chọn)
         $tool_ids_raw = $nv_Request->get_array('tool_ids', 'post', array());
         $tool_ids = array_filter(array_map('intval', $tool_ids_raw), function($val) {
             return $val > 0;
-        });
+                });
 
         if ($array['student_id'] == 0) {
             $error = $lang_module['error_student_not_found']; // Cần thêm ngôn ngữ này
@@ -80,24 +90,47 @@ if ($action == 'add') {
             $error = $lang_module['error_due_date'];
         } elseif (empty($tool_ids)) {
             $error = $lang_module['error_tools'];
-        } else {
+                } else {
             $db->beginTransaction();
             try {
+            // Update student phone if different
+            if (!empty($student_phone)) {
+                $sql_check_phone = 'SELECT phone_number FROM ' . NV_PREFIXLANG . '_' . $module_data . '_students WHERE id = :id';
+                $sth_check = $db->prepare($sql_check_phone);
+                $sth_check->bindParam(':id', $array['student_id'], PDO::PARAM_INT);
+                $sth_check->execute();
+                $current_phone = $sth_check->fetchColumn();
+                if ($current_phone != $student_phone) {
+                    $sql_update_phone = 'UPDATE ' . NV_PREFIXLANG . '_' . $module_data . '_students SET phone_number = :phone WHERE id = :id';
+                    $sth_update_phone = $db->prepare($sql_update_phone);
+                    $sth_update_phone->bindParam(':phone', $student_phone, PDO::PARAM_STR);
+                    $sth_update_phone->bindParam(':id', $array['student_id'], PDO::PARAM_INT);
+                        $sth_update_phone->execute();
+                    }
+                }
+
                 // ... (Logic lưu DB giữ nguyên, không thay đổi)
-                $sql = 'INSERT INTO ' . NV_PREFIXLANG . '_' . $module_data . '_borrowing_slips (student_id, borrow_date, due_date, note) VALUES (:student_id, :borrow_date, :due_date, :note)';
+                $sql = 'INSERT INTO ' . NV_PREFIXLANG . '_' . $module_data . '_slips (student_id, admin_id, borrow_date, due_date, notes, status) VALUES (:student_id, :admin_id, :borrow_date, :due_date, :notes, :status)';
                 $sth = $db->prepare($sql);
                 $sth->bindParam(':student_id', $array['student_id'], PDO::PARAM_INT);
+                $sth->bindParam(':admin_id', $admin_info['userid'], PDO::PARAM_INT);
                 $sth->bindParam(':borrow_date', $array['borrow_date'], PDO::PARAM_STR);
                 $sth->bindParam(':due_date', $array['due_date'], PDO::PARAM_STR);
-                $sth->bindParam(':note', $array['note'], PDO::PARAM_STR);
+                $sth->bindParam(':notes', $array['note'], PDO::PARAM_STR);
+                $status = 0; // 0 = borrowing
+                $sth->bindParam(':status', $status, PDO::PARAM_INT);
                 $sth->execute();
                 $slip_id = $db->lastInsertId();
 
                 foreach ($tool_ids as $tool_id) {
-                    $sql = 'INSERT INTO ' . NV_PREFIXLANG . '_' . $module_data . '_borrowing_slip_details (slip_id, tool_id) VALUES (:slip_id, :tool_id)';
+                    $sql = 'INSERT INTO ' . NV_PREFIXLANG . '_' . $module_data . '_slip_details (slip_id, tool_id, quantity, note) VALUES (:slip_id, :tool_id, :quantity, :note)';
                     $sth = $db->prepare($sql);
                     $sth->bindParam(':slip_id', $slip_id, PDO::PARAM_INT);
                     $sth->bindParam(':tool_id', $tool_id, PDO::PARAM_INT);
+                    $quantity = 1;
+                    $sth->bindParam(':quantity', $quantity, PDO::PARAM_INT);
+                    $note = '';
+                    $sth->bindParam(':note', $note, PDO::PARAM_STR);
                     $sth->execute();
 
                     $sql_update_tool = 'UPDATE ' . NV_PREFIXLANG . '_' . $module_data . '_tools SET status = :status WHERE id = :id';
@@ -188,8 +221,9 @@ if ($action == 'add') {
             data-lang-remove="' . $lang_module['remove'] . '">
 
             <input type="hidden" name="action" value="add">
-            <input type="hidden" name="ajax_submit" value="1"> 
+            <input type="hidden" name="ajax_submit" value="1">
             <input type="hidden" id="student-id-hidden" name="student_id" value="0">
+            <input type="hidden" id="student-class-hidden" name="student_class" value="">
 
             <div class="form-group">
                 <label>' . $lang_module['student_code'] . '</label>
@@ -300,7 +334,7 @@ if ($action == 'add') {
     }
 
     try {
-        $sql = 'SELECT id, full_name, student_code FROM ' . NV_PREFIXLANG . '_' . $module_data . '_students WHERE student_code = :student_code';
+        $sql = 'SELECT id, full_name, student_code, class, phone_number FROM ' . NV_PREFIXLANG . '_' . $module_data . '_students WHERE student_code = :student_code';
         $sth = $db->prepare($sql);
         $sth->bindParam(':student_code', $student_code, PDO::PARAM_STR);
         $sth->execute();
@@ -316,17 +350,9 @@ if ($action == 'add') {
     }
     exit; // Rất quan trọng
 
-// =================================================================
-// KẾT THÚC KHỐI LOGIC MỚI
-// =================================================================
-
-//
-// XÓA KHỐI LẶP Ở ĐÂY (trước đây là dòng 417-444)
-//
-
 } elseif ($action == 'view') {
     // ... (Logic xem chi tiết giữ nguyên)
-    $sql = 'SELECT bs.*, s.full_name, s.student_code FROM ' . NV_PREFIXLANG . '_' . $module_data . '_borrowing_slips bs LEFT JOIN ' . NV_PREFIXLANG . '_' . $module_data . '_students s ON bs.student_id = s.id WHERE bs.id = :id';
+    $sql = 'SELECT bs.*, s.full_name, s.student_code, s.phone_number FROM ' . NV_PREFIXLANG . '_' . $module_data . '_slips bs LEFT JOIN ' . NV_PREFIXLANG . '_' . $module_data . '_students s ON bs.student_id = s.id WHERE bs.id = :id';
     $sth = $db->prepare($sql);
     $sth->bindValue(':id', (int)$id, PDO::PARAM_INT);
     $sth->execute();
@@ -334,15 +360,27 @@ if ($action == 'add') {
     if (!$slip) {
         nv_redirect_location(NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name . '&' . NV_OP_VARIABLE . '=' . $op);
     }
-    $sql_tools = 'SELECT t.id, t.code, t.name, c.name as category_name FROM ' . NV_PREFIXLANG . '_' . $module_data . '_borrowing_slip_details sd LEFT JOIN ' . NV_PREFIXLANG . '_' . $module_data . '_tools t ON sd.tool_id = t.id LEFT JOIN ' . NV_PREFIXLANG . '_' . $module_data . '_categories c ON t.category_id = c.id WHERE sd.slip_id = :slip_id';
+    $sql_tools = 'SELECT t.id, t.code, t.name, c.name as category_name FROM ' . NV_PREFIXLANG . '_' . $module_data . '_slip_details sd LEFT JOIN ' . NV_PREFIXLANG . '_' . $module_data . '_tools t ON sd.tool_id = t.id LEFT JOIN ' . NV_PREFIXLANG . '_' . $module_data . '_categories c ON t.category_id = c.id WHERE sd.slip_id = :slip_id';
     $sth_tools = $db->prepare($sql_tools);
     $sth_tools->bindValue(':slip_id', (int)$id, PDO::PARAM_INT);
     $sth_tools->execute();
     $tools = $sth_tools->fetchAll();
-    $slip['status_text'] = isset($lang_module[$slip['status']]) ? $lang_module[$slip['status']] : $slip['status'];
-    $slip['borrow_date'] = nv_date('d/m/Y', strtotime($slip['borrow_date']));
-    $slip['due_date'] = nv_date('d/m/Y', strtotime($slip['due_date']));
-    $slip['return_date'] = $slip['return_date'] ? nv_date('d/m/Y', strtotime($slip['return_date'])) : '';
+    if ($slip['status'] == 0) {
+        $slip['status_text'] = $lang_module['borrowing'];
+        $slip['status_class'] = 'success';
+    } elseif ($slip['status'] == 1) {
+        $slip['status_text'] = $lang_module['returned'];
+        $slip['status_class'] = 'warning';
+    } elseif ($slip['status'] == 2) {
+        $slip['status_text'] = $lang_module['overdue'];
+        $slip['status_class'] = 'danger';
+    } else {
+        $slip['status_text'] = 'Unknown';
+        $slip['status_class'] = 'secondary';
+    }
+    $slip['borrow_date'] = nv_date('d/m/Y', $slip['borrow_date']);
+    $slip['due_date'] = nv_date('d/m/Y', $slip['due_date']);
+    $slip['return_date'] = $slip['return_date'] ? nv_date('d/m/Y', $slip['return_date']) : '';
     $xtpl->assign('SLIP', $slip);
     foreach ($tools as $tool) {
         $xtpl->assign('TOOL', $tool);
@@ -357,15 +395,30 @@ if ($action == 'add') {
     $page = $nv_Request->get_int('page', 'get', 1);
     $base_url = NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name . '&' . NV_OP_VARIABLE . '=borrowing';
     $filter = $nv_Request->get_title('filter', 'get', '');
+    $search = $nv_Request->get_string('search', 'get', '');
     if (!empty($filter)) {
         $base_url .= '&filter=' . urlencode($filter);
     }
+    if (!empty($search)) {
+        $base_url .= '&search=' . urlencode($search);
+    }
     try {
-        $sql = 'SELECT bs.*, s.full_name, s.student_code FROM ' . NV_PREFIXLANG . '_' . $module_data . '_borrowing_slips bs LEFT JOIN ' . NV_PREFIXLANG . '_' . $module_data . '_students s ON bs.student_id = s.id';
+        $sql = 'SELECT bs.*, s.full_name, s.student_code, s.phone_number FROM ' . NV_PREFIXLANG . '_' . $module_data . '_slips bs LEFT JOIN ' . NV_PREFIXLANG . '_' . $module_data . '_students s ON bs.student_id = s.id';
         $params = array();
-        if ($filter === 'overdue') {
-            $sql .= ' WHERE bs.status = :status';
-            $params[':status'] = 'overdue';
+        $where = array();
+        if ($filter === 'borrowing') {
+            $where[] = 'bs.status = 0';
+        } elseif ($filter === 'returned') {
+            $where[] = 'bs.status = 1';
+        } elseif ($filter === 'overdue') {
+            $where[] = 'bs.status = 2';
+        }
+        if (!empty($search)) {
+            $where[] = 's.student_code LIKE :search';
+            $params[':search'] = '%' . $search . '%';
+        }
+        if (!empty($where)) {
+            $sql .= ' WHERE ' . implode(' AND ', $where);
         }
         $sql .= ' ORDER BY bs.id DESC LIMIT :limit OFFSET :offset';
         $sth = $db->prepare($sql);
@@ -380,9 +433,23 @@ if ($action == 'add') {
         $slips = array();
     }
     foreach ($slips as $slip) {
-        $slip['status_text'] = isset($lang_module[$slip['status']]) ? $lang_module[$slip['status']] : $slip['status'];
+        if ($slip['status'] == 0) {
+            $slip['status_text'] = $lang_module['borrowing'];
+            $slip['status_class'] = 'success';
+        } elseif ($slip['status'] == 1) {
+            $slip['status_text'] = $lang_module['returned'];
+            $slip['status_class'] = 'warning';
+        } elseif ($slip['status'] == 2) {
+            $slip['status_text'] = $lang_module['overdue'];
+            $slip['status_class'] = 'danger';
+        } else {
+            $slip['status_text'] = 'Unknown';
+            $slip['status_class'] = 'secondary';
+        }
+        $slip['borrow_date'] = nv_date('d/m/Y', $slip['borrow_date']);
+        $slip['due_date'] = nv_date('d/m/Y', $slip['due_date']);
         try {
-            $sql = 'SELECT COUNT(*) FROM ' . NV_PREFIXLANG . '_' . $module_data . '_borrowing_slip_details WHERE slip_id = :slip_id';
+            $sql = 'SELECT COUNT(*) FROM ' . NV_PREFIXLANG . '_' . $module_data . '_slip_details WHERE slip_id = :slip_id';
             $sth_count = $db->prepare($sql);
             $sth_count->bindValue(':slip_id', (int)$slip['id'], PDO::PARAM_INT);
             $sth_count->execute();
@@ -390,27 +457,50 @@ if ($action == 'add') {
         } catch (PDOException $e) {
             $slip['tool_count'] = 0;
         }
-        if ($slip['status'] == 'borrowing' && strtotime($slip['due_date']) < time()) {
+        if ($slip['status'] == 0 && $slip['due_date'] < time()) {
             try {
-                $sql_overdue = 'UPDATE ' . NV_PREFIXLANG . '_' . $module_data . '_borrowing_slips SET status = :status WHERE id = :id';
+                $sql_overdue = 'UPDATE ' . NV_PREFIXLANG . '_' . $module_data . '_slips SET status = 2 WHERE id = :id';
                 $sth_overdue = $db->prepare($sql_overdue);
-                $sth_overdue->bindValue(':status', 'overdue', PDO::PARAM_STR);
                 $sth_overdue->bindValue(':id', (int)$slip['id'], PDO::PARAM_INT);
                 $sth_overdue->execute();
             } catch (PDOException $e) {}
-            $slip['status'] = 'overdue';
+            $slip['status'] = 2;
             $slip['status_text'] = isset($lang_module['overdue']) ? $lang_module['overdue'] : 'Quá hạn';
         }
         $xtpl->assign('SLIP', $slip);
         $xtpl->parse('main.list.slip.view_btn');
-        if ($slip['status'] == 'borrowing' || $slip['status'] == 'overdue') {
+        if ($slip['status'] == 0 || $slip['status'] == 2) {
             $xtpl->parse('main.list.slip.return_btn');
         }
         $xtpl->parse('main.list.slip');
     }
+    $xtpl->assign('SEARCH', $search);
+    $xtpl->assign('FILTER_BORROWING', $filter === 'borrowing' ? 'selected' : '');
+    $xtpl->assign('FILTER_RETURNED', $filter === 'returned' ? 'selected' : '');
+    $xtpl->assign('FILTER_OVERDUE', $filter === 'overdue' ? 'selected' : '');
+
     try {
-        $sql = 'SELECT COUNT(*) FROM ' . NV_PREFIXLANG . '_' . $module_data . '_borrowing_slips';
-        $sth_count_all = $db->prepare($sql);
+        $sql_count = 'SELECT COUNT(*) FROM ' . NV_PREFIXLANG . '_' . $module_data . '_slips bs LEFT JOIN ' . NV_PREFIXLANG . '_' . $module_data . '_students s ON bs.student_id = s.id';
+        $params_count = array();
+        $where_count = array();
+        if ($filter === 'borrowing') {
+            $where_count[] = 'bs.status = 0';
+        } elseif ($filter === 'returned') {
+            $where_count[] = 'bs.status = 1';
+        } elseif ($filter === 'overdue') {
+            $where_count[] = 'bs.status = 2';
+        }
+        if (!empty($search)) {
+            $where_count[] = 's.student_code LIKE :search';
+            $params_count[':search'] = '%' . $search . '%';
+        }
+        if (!empty($where_count)) {
+            $sql_count .= ' WHERE ' . implode(' AND ', $where_count);
+        }
+        $sth_count_all = $db->prepare($sql_count);
+        foreach ($params_count as $k => $v) {
+            $sth_count_all->bindValue($k, $v, PDO::PARAM_STR);
+        }
         $sth_count_all->execute();
         $num_items = (int)$sth_count_all->fetchColumn();
     } catch (PDOException $e) {
@@ -426,6 +516,10 @@ if ($action == 'add') {
 
 $xtpl->parse('main');
 $contents = $xtpl->text('main');
+
+// Tạo URL chuẩn cho JS để fetch form
+$add_slip_fetch_url = NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name . '&' . NV_OP_VARIABLE . '=borrowing&action=add&ajax=1';
+$contents .= '<script>var TSM_ADD_SLIP_URL = "' . $add_slip_fetch_url . '";</script>';
 
 $contents .= '<script src="/nukeviet/modules/tool-slip-management/js/admin.js"></script>';
 $contents .= '<script>console.log("JS added to contents");</script>';

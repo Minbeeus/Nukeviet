@@ -1,41 +1,40 @@
 (function () {
     'use strict';
-    console.log('Script admin.js loaded');
 
-    // Helper: send POST request (fetch)
+    // Helper: send POST request (XMLHttpRequest for better compatibility)
     function postForm(url, data) {
-        let fetchOptions = {
-            method: 'POST',
-            credentials: 'include', // Gửi cookie (quan trọng cho session NukeViet)
-        };
+        return new Promise(function(resolve, reject) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', url, true);
+            xhr.withCredentials = true; // Gửi cookie
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
-        // Kiểm tra nếu data là FormData (cho form submit)
-        if (data instanceof FormData) {
-            fetchOptions.body = data;
-            // KHÔNG set 'Content-Type', trình duyệt sẽ tự làm với boundary đúng
-        } else {
-            // Nếu data là object (cho các action khác)
-            var formBody = [];
-            for (var prop in data) {
-                var encodedKey = encodeURIComponent(prop);
-                var encodedValue = encodeURIComponent(data[prop]);
-                formBody.push(encodedKey + "=" + encodedValue);
-            }
-            fetchOptions.body = formBody.join("&");
-            fetchOptions.headers = {
-                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                'X-Requested-With': 'XMLHttpRequest' // Đánh dấu là AJAX
+            xhr.onload = function() {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    resolve(xhr.responseText);
+                } else {
+                    reject(new Error('Network error: ' + xhr.status + ' ' + xhr.statusText + ' | ' + xhr.responseText));
+                }
             };
-        }
 
-        return fetch(url, fetchOptions).then(function (res) {
-            if (!res.ok) {
-                console.error('Network response was not ok. Status:', res.status, res.statusText);
-                return res.text().then(text => { // Cố gắng đọc lỗi từ server
-                    throw new Error('Network error: ' + res.status + ' ' + res.statusText + ' | ' + text);
-                });
+            xhr.onerror = function() {
+                reject(new Error('Network error'));
+            };
+
+            // Kiểm tra nếu data là FormData
+            if (data instanceof FormData) {
+                xhr.send(data);
+            } else {
+                // Nếu data là object
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+                var formBody = [];
+                for (var prop in data) {
+                    var encodedKey = encodeURIComponent(prop);
+                    var encodedValue = encodeURIComponent(data[prop]);
+                    formBody.push(encodedKey + "=" + encodedValue);
+                }
+                xhr.send(formBody.join("&"));
             }
-            return res.text(); // Trả về text để hàm gọi xử lý JSON
         });
     }
 
@@ -165,7 +164,10 @@
          var actionText = formData.get('action') === 'maintenance' ? 'bảo trì' : 'huỷ';
          if (!confirm('Bạn có chắc muốn tạo phiếu ' + actionText + ' cho công cụ này?')) return;
 
-         postForm(form.action || window.location.href, formData).then(function (text) {
+         var submitUrl = '/nukeviet/admin/index.php?nv=tool-slip-management&op=tools';
+          console.log('Slip form submitting to URL:', submitUrl);
+
+          postForm(submitUrl, formData).then(function (text) {
              try {
                  var json = JSON.parse(text);
                  if (json && json.success) {
@@ -399,9 +401,9 @@
             studentInfoDiv.innerHTML = langSearching + '...';
             studentInfoDiv.style.display = "block";
 
-            fetch(studentCheckUrl + "&code=" + encodeURIComponent(code), {
-                credentials: 'include',
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            fetch(studentCheckUrl + "&ajax=1&code=" + encodeURIComponent(code), {
+            credentials: 'include',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
                 .then(res => {
                     if (!res.ok) throw new Error('Server error: ' + res.status);
@@ -409,9 +411,14 @@
                 })
                 .then(data => {
                     if (data.success && data.student) {
-                        studentInfoDiv.innerHTML = `<strong>${langStudent}:</strong> ${data.student.full_name} (${data.student.student_code})`;
+                        studentInfoDiv.innerHTML = `<strong>${langStudent}:</strong> ${data.student.full_name} (${data.student.student_code})<br>
+                        <strong>Lớp:</strong> ${data.student.class || 'N/A'}<br>
+                        <strong>Số điện thoại:</strong> <input type="text" id="student-phone-input" value="${data.student.phone_number || ''}" placeholder="Nhập số điện thoại">`;
                         studentInfoDiv.classList.add("success");
                         studentIdHidden.value = data.student.id;
+                        // Set hidden class if needed
+                        var classHidden = document.getElementById('student-class-hidden');
+                        if (classHidden) classHidden.value = data.student.class || '';
                     } else {
                         studentInfoDiv.innerHTML = data.message || 'Không tìm thấy sinh viên.';
                         studentInfoDiv.classList.add("error");
@@ -507,43 +514,91 @@
              return;
         }
         btn.addEventListener('click', function () {
-            var baseUrl = window.location.href.split('?')[0];
-            var params = new URLSearchParams(window.location.search);
-            params.set('action', 'add');
-            params.set('ajax', '1');
-            params.delete('id'); // Xóa id nếu có
-            var url = baseUrl + '?' + params.toString();
+            var url;
+            if (typeof TSM_ADD_SLIP_URL !== 'undefined' && TSM_ADD_SLIP_URL) {
+                url = TSM_ADD_SLIP_URL;
+            } else {
+                // Fallback nếu biến global không tồn tại
+                console.warn('TSM_ADD_SLIP_URL is not defined. Using fallback URL logic (may be incorrect).');
+                var baseUrl = window.location.href.split('?')[0];
+                var params = new URLSearchParams(window.location.search);
+                params.set('action', 'add');
+                params.set('ajax', '1');
+                params.delete('id'); // Xóa id nếu có
+                url = baseUrl + '?' + params.toString();
+            }
 
             console.log('Fetching Add Slip Form URL:', url);
-            fetch(url, { credentials: 'include', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-            .then(res => {
-                if (!res.ok) throw new Error(`Network response was not ok (${res.status})`);
-                return res.text();
-            })
-            .then(html => {
-                var modalEl = document.getElementById('tsmActionModal');
-                if (!modalEl) { console.error('Modal #tsmActionModal not found!'); return; }
-                var body = modalEl.querySelector('.modal-body');
-                var title = modalEl.querySelector('.modal-title');
-                if (body) {
-                     body.innerHTML = html; // Chèn HTML form vào modal
-                     console.log('Modal content updated.');
-                } else { console.error('Modal body not found!'); }
-
-                if (title) title.textContent = 'Thêm phiếu mượn'; // Lấy từ data-attribute sẽ tốt hơn
-
-                showModalById('tsmActionModal'); // Hiển thị modal
-
-                // Quan trọng: Gọi hàm khởi tạo logic SAU KHI HTML được chèn vào DOM
-                initAddSlipFormLogic();
-
-            }).catch(err => {
-                console.error('Fetch error loading add slip form:', err);
-                alert('Lỗi khi tải form thêm phiếu mượn: ' + err.message);
-            });
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.withCredentials = true;
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            xhr.onload = function() {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    var html = xhr.responseText;
+                    var modalEl = document.getElementById('tsmActionModal');
+                    if (!modalEl) { console.error('Modal #tsmActionModal not found!'); return; }
+                    var body = modalEl.querySelector('.modal-body');
+                    var title = modalEl.querySelector('.modal-title');
+                    if (body) {
+                         body.innerHTML = html;
+                         console.log('Modal content updated.');
+                    } else { console.error('Modal body not found!'); }
+                    if (title) title.textContent = 'Thêm phiếu mượn';
+                    showModalById('tsmActionModal');
+                    initAddSlipFormLogic();
+                } else {
+                    console.error('XHR error:', xhr.status, xhr.statusText);
+                    alert('Lỗi khi tải form thêm phiếu mượn: ' + xhr.status + ' ' + xhr.statusText);
+                }
+            };
+            xhr.onerror = function() {
+                console.error('XHR network error');
+                alert('Lỗi mạng khi tải form thêm phiếu mượn');
+            };
+            xhr.send();
         });
         console.log('Event listener attached to #btn-add-slip');
     }
+
+    // Submit edit tool form
+    window.submitEditForm = function() {
+        var form = document.getElementById('edit-tool-form');
+        if (!form) { alert('Lỗi: Không tìm thấy form sửa công cụ.'); return; }
+        var formData = new FormData(form);
+        formData.append('submit', 'submit');
+
+        // Validation cơ bản
+        if (!formData.get('tool_code')) { alert('Vui lòng nhập mã công cụ.'); return; }
+        if (!formData.get('name')) { alert('Vui lòng nhập tên công cụ.'); return; }
+        if (!formData.get('category_id') || formData.get('category_id') == 0) { alert('Vui lòng chọn danh mục.'); return; }
+
+        if (!confirm('Bạn có chắc muốn cập nhật công cụ này?')) return;
+
+        var submitUrl = '/nukeviet/admin/index.php?nv=tool-slip-management&op=tools';
+        console.log('Edit form submitting to URL:', submitUrl);
+        console.log('Edit form data:', Object.fromEntries(formData));
+
+        postForm(submitUrl, formData).then(text => {
+        try {
+        var json = JSON.parse(text);
+        if (json && json.success) {
+        alert(json.message || 'Cập nhật thành công!');
+            hideModalById('tsmActionModal', null);
+                window.location.reload();
+        } else {
+            alert('Lỗi: ' + (json && json.message ? json.message : 'Lỗi không xác định từ server.'));
+        }
+        } catch (e) {
+                console.error("JSON Parse Error:", e);
+                console.log("Response Text:", text);
+                alert('Lỗi: Phản hồi không hợp lệ từ server.');
+            }
+        }).catch(err => {
+            console.error('Fetch error:', err);
+            alert('Lỗi mạng khi cập nhật công cụ: ' + err.message);
+        });
+    };
 
     // Submit add tool form (Cần ID form cụ thể)
     window.submitAddToolForm = function() {
@@ -559,7 +614,10 @@
 
         if (!confirm('Bạn có chắc muốn thêm công cụ này?')) return;
 
-        postForm(form.action || window.location.href, formData).then(text => {
+        var submitUrl = '/nukeviet/admin/index.php?nv=tool-slip-management&op=tools';
+        console.log('Add form submitting to URL:', submitUrl);
+
+        postForm(submitUrl, formData).then(text => {
             try {
                 var json = JSON.parse(text);
                 if (json && json.success) {
@@ -586,6 +644,7 @@
         var form = document.getElementById('add-slip-form');
         if (!form) { alert('Lỗi: Không tìm thấy form thêm phiếu mượn.'); return; }
 
+        var url = form.getAttribute('action'); // Use getAttribute to avoid conflict with input name="action"
         var formData = new FormData(form);
 
         // Validation Client-side
@@ -595,6 +654,11 @@
             var studentInput = document.getElementById('student-code-input');
             if(studentInput) studentInput.focus();
             return;
+        }
+        // Get phone from input
+        var phoneInput = document.getElementById('student-phone-input');
+        if (phoneInput) {
+            formData.append('student_phone', phoneInput.value.trim());
         }
         // Lọc các tool_ids hợp lệ (khác "0")
         var toolIds = formData.getAll('tool_ids[]').filter(id => id && id !== "0");
@@ -621,7 +685,7 @@
         }
 
         // Submit dùng FormData
-        postForm(form.action, formData).then(function (text) {
+        postForm(url, formData).then(function (text) {
             try {
                 var json = JSON.parse(text);
                 if (json && json.success) {
@@ -693,8 +757,123 @@
     };
 
 
-    // Tool search in borrowing form (Đã bị thay thế bởi logic trong initAddSlipFormLogic)
-    // function initToolSearch() { ... }
+    // Tool search in borrowing form - filter select options based on search input
+    function initToolSearch() {
+        var searchInput = document.getElementById('tool-search');
+        var toolSelect = document.getElementById('tool-select');
+
+        if (!searchInput || !toolSelect) {
+            // Only log if we're actually on a page that might need this (borrowing related)
+            if (window.location.href.indexOf('borrowing') > -1) {
+                console.log('Tool search elements not found for client-side filtering.');
+            }
+            return;
+        }
+
+        function filterTools() {
+            var query = searchInput.value.toLowerCase().trim();
+            var options = toolSelect.querySelectorAll('option');
+
+            options.forEach(function(option) {
+                if (option.value === '') return; // Skip placeholder
+                var text = option.textContent.toLowerCase();
+                var show = text.includes(query);
+                option.style.display = show ? '' : 'none';
+            });
+
+            // Reset selection if filtered options don't include selected ones
+            var selectedOptions = Array.from(toolSelect.selectedOptions);
+            selectedOptions.forEach(function(opt) {
+                if (opt.style.display === 'none') {
+                    opt.selected = false;
+                }
+            });
+        }
+
+        searchInput.addEventListener('input', debounce(filterTools, 300));
+        searchInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                filterTools();
+            }
+        });
+    }
+
+    // Real-time form validation for borrowing form
+    function initFormValidation() {
+        var form = document.querySelector('form[action=""]'); // Borrowing form
+        if (!form) return;
+
+        var studentSelect = form.querySelector('select[name="student_id"]');
+        var borrowDateInput = form.querySelector('input[name="borrow_date"]');
+        var dueDateInput = form.querySelector('input[name="due_date"]');
+        var toolSelect = form.querySelector('select[name="tool_ids[]"]');
+
+        function validateField(field, condition, message) {
+            var feedback = field.parentNode.querySelector('.invalid-feedback');
+            if (!feedback) {
+                feedback = document.createElement('div');
+                feedback.className = 'invalid-feedback';
+                field.parentNode.appendChild(feedback);
+            }
+
+            if (!condition) {
+                field.classList.add('is-invalid');
+                feedback.textContent = message;
+                return false;
+            } else {
+                field.classList.remove('is-invalid');
+                feedback.textContent = '';
+                return true;
+            }
+        }
+
+        function validateDates() {
+            if (!borrowDateInput.value || !dueDateInput.value) return;
+            var borrowDate = new Date(borrowDateInput.value);
+            var dueDate = new Date(dueDateInput.value);
+            validateField(dueDateInput, dueDate >= borrowDate, 'Ngày hẹn trả phải sau hoặc bằng ngày mượn.');
+        }
+
+        if (studentSelect) {
+            studentSelect.addEventListener('change', function() {
+                validateField(studentSelect, this.value !== '0', 'Vui lòng chọn sinh viên.');
+            });
+        }
+
+        if (borrowDateInput) {
+            borrowDateInput.addEventListener('change', validateDates);
+        }
+
+        if (dueDateInput) {
+            dueDateInput.addEventListener('change', validateDates);
+        }
+
+        if (toolSelect) {
+            toolSelect.addEventListener('change', function() {
+                validateField(toolSelect, this.selectedOptions.length > 0, 'Vui lòng chọn ít nhất một công cụ.');
+            });
+        }
+
+        // Validate on form submit
+        form.addEventListener('submit', function(e) {
+            var isValid = true;
+            if (studentSelect) isValid &= validateField(studentSelect, studentSelect.value !== '0', 'Vui lòng chọn sinh viên.');
+            if (borrowDateInput) isValid &= validateField(borrowDateInput, borrowDateInput.value, 'Vui lòng nhập ngày mượn.');
+            if (dueDateInput) {
+                isValid &= validateField(dueDateInput, dueDateInput.value, 'Vui lòng nhập ngày hẹn trả.');
+                validateDates();
+            }
+            if (toolSelect) isValid &= validateField(toolSelect, toolSelect.selectedOptions.length > 0, 'Vui lòng chọn ít nhất một công cụ.');
+
+            if (!isValid) {
+                e.preventDefault();
+                // Scroll to first invalid field
+                var firstInvalid = form.querySelector('.is-invalid');
+                if (firstInvalid) firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+    }
 
     // Ajax action links: open returned HTML inside a generic modal
     function initAjaxActions() {
@@ -707,46 +886,87 @@
 
                 if (!url) return;
 
-                fetch(url, { credentials: 'include', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                .then(res => {
-                    if (!res.ok) throw new Error('Network response was not ok');
-                    return res.text();
-                })
-                .then(html => {
-                    var modalEl = document.getElementById(modalId);
-                    if (!modalEl) { console.error(`Modal #${modalId} not found!`); return; }
-                    var body = modalEl.querySelector('.modal-body');
-                    var titleEl = modalEl.querySelector('.modal-title');
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', url, true);
+                xhr.withCredentials = true;
+                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                xhr.onload = function() {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        var html = xhr.responseText;
+                        var modalEl = document.getElementById(modalId);
+                        if (!modalEl) { console.error(`Modal #${modalId} not found!`); return; }
+                        var body = modalEl.querySelector('.modal-body');
+                        var titleEl = modalEl.querySelector('.modal-title');
 
-                    if (body) body.innerHTML = html;
-                    if (titleEl) titleEl.textContent = modalTitle; // Use data-attribute title
+                        if (body) body.innerHTML = html;
+                        if (titleEl) titleEl.textContent = modalTitle;
 
-                    showModalById(modalId);
-                    // Add hook or event for JS initialization if needed after loading content
-                    // Example: document.dispatchEvent(new CustomEvent('tsm:modalContentLoaded', { detail: { modalId: modalId } }));
-                })
-                .catch(err => {
-                     console.error('Fetch error loading AJAX content:', err);
-                    alert('Lỗi khi tải nội dung: ' + err.message);
-                });
+                        showModalById(modalId);
+                    } else {
+                        console.error('XHR error:', xhr.status, xhr.statusText);
+                        alert('Lỗi khi tải nội dung: ' + xhr.status + ' ' + xhr.statusText);
+                    }
+                };
+                xhr.onerror = function() {
+                    console.error('XHR network error');
+                    alert('Lỗi mạng khi tải nội dung');
+                };
+                xhr.send();
             });
         });
     }
 
 
 
+    
+
+    // Real-time search for borrowing list
+    function initBorrowingSearch() {
+        var searchInput = document.getElementById('search-input');
+        var table = document.getElementById('borrowing-table');
+
+        if (!searchInput || !table) return;
+
+        var tbody = table.querySelector('tbody');
+        if (!tbody) return;
+
+        var rows = Array.from(tbody.querySelectorAll('tr'));
+
+        function filterRows() {
+            var query = searchInput.value.toLowerCase().trim();
+
+            rows.forEach(function(row) {
+                var cells = row.querySelectorAll('td');
+                if (cells.length < 4) return;
+
+                var slipId = (cells[0]?.textContent || '').toLowerCase();
+                var studentName = (cells[1]?.textContent || '').toLowerCase();
+                var status = (cells[5]?.textContent || '').toLowerCase();
+
+                var match = !query ||
+                    slipId.includes(query) ||
+                    studentName.includes(query) ||
+                    status.includes(query);
+
+                row.style.display = match ? '' : 'none';
+            });
+        }
+
+        searchInput.addEventListener('input', debounce(filterRows, 300));
+    }
+
     // Initialize when DOM ready. Use readyState check so script works even if loaded after event.
     function initAll() {
         try {
-            console.log('Admin JS initAll called');
-            initStatusChange();
-            initSearch();
-            initAddTool();
-            initAddSlip(); // Sẽ gắn listener cho nút #btn-add-slip
-            // initToolSearch(); // Không cần nữa vì logic đã chuyển vào initAddSlipFormLogic
-            initAjaxActions();
-            fixDropdownAria();
-            console.log('Admin JS Initialized Successfully.');
+        initStatusChange();
+        initSearch();
+        initAddTool();
+        initAddSlip();
+        initToolSearch();
+        initFormValidation();
+        initBorrowingSearch();
+        initAjaxActions();
+        fixDropdownAria();
         } catch (e) {
             console.error('Error initializing admin.js components:', e);
         }

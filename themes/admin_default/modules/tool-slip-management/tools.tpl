@@ -1,9 +1,10 @@
 <!-- BEGIN: main -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-<link rel="stylesheet" href="{NV_BASE_SITEURL}modules/{MODULE_NAME}/css/main.css">
+<link rel="stylesheet" href="{NV_BASE_SITEURL}modules/{MODULE_NAME}/css/admin.css?v=1.8">
 <script src="{NV_BASE_SITEURL}modules/{MODULE_NAME}/js/admin.js"></script>
 
-<div class="tsm-module">
+<div class="tsm-module reports-page">
+    <div class="container-fluid">
 <!-- BEGIN: not_installed -->
 <div class="alert alert-warning">
     <h4>{LANG.module_not_installed}</h4>
@@ -70,22 +71,22 @@
     <div class="card-body">
             <div class="row mb-3" id="tsm-filters" data-base="{NV_BASE_ADMINURL}index.php?{NV_LANG_VARIABLE}={NV_LANG_DATA}&{NV_NAME_VARIABLE}={MODULE_NAME}&{NV_OP_VARIABLE}=tools">
             <div class="col-md-4">
-            <input type="text" class="form-control" placeholder="{LANG.search}" id="search-q" value="{Q}" aria-label="Search">
+            <input type="text" class="form-control form-control-lg" placeholder="{LANG.search}" id="search-q" value="{Q}" aria-label="Search">
             </div>
             <div class="col-md-4">
-            <select class="form-control" id="search-category" aria-label="Category">
+            <select class="form-control form-control-lg" id="search-category" aria-label="Category">
             <option value="0">-- {LANG.all_categories} --</option>
-                <!-- BEGIN: category_filter -->
-                    <option value="{CATEGORY.id}" {SELECTED}>{CATEGORY.name}</option>
-                    <!-- END: category_filter -->
+            <!-- BEGIN: category_filter -->
+            <option value="{CATEGORY.id}" {SELECTED}>{CATEGORY.name}</option>
+            <!-- END: category_filter -->
             </select>
             </div>
             <div class="col-md-4">
-            <select class="form-control" id="search-status" aria-label="Status">
+            <select class="form-control form-control-lg" id="search-status" aria-label="Status">
             <option value="">-- {LANG.all_status} --</option>
-                <!-- BEGIN: status_filter -->
-                    <option value="{STATUS_KEY}" {SELECTED}>{STATUS_VALUE}</option>
-                    <!-- END: status_filter -->
+            <!-- BEGIN: status_filter -->
+            <option value="{STATUS_KEY}" {SELECTED}>{STATUS_VALUE}</option>
+            <!-- END: status_filter -->
             </select>
             </div>
             </div>
@@ -95,7 +96,7 @@
     <button type="button" class="btn-close" id="add-tool-close" style="position: absolute; top: 10px; right: 10px;" aria-label="Close"></button>
     <h5>{LANG.add_tool}</h5>
     <!-- BEGIN: main.form -->
-    <form id="add-tool-form" method="post" action="">
+    <form id="add-tool-form" method="post" action="/nukeviet/admin/index.php?nv=tool-slip-management&op=tools">
         <div class="row">
             <div class="col-md-6">
                 <div class="form-group">
@@ -174,19 +175,19 @@
             </td>
             <td>
                     <div class="d-flex gap-2 align-items-center">
-                        <a href="{NV_BASE_ADMINURL}index.php?{NV_LANG_VARIABLE}={NV_LANG_DATA}&{NV_NAME_VARIABLE}={MODULE_NAME}&{NV_OP_VARIABLE}=tools&action=view&id={TOOL.id}&ajax=1" class="btn btn-outline-secondary btn-sm action-ajax" title="Xem thông tin chi tiết" aria-label="Xem thông tin chi tiết">
+                        <a href="/nukeviet/admin/index.php?nv=tool-slip-management&op=tools&action=view&id={TOOL.id}&ajax=1" class="btn btn-outline-secondary btn-sm action-ajax" title="Xem thông tin chi tiết" aria-label="Xem thông tin chi tiết">
                             <i class="fas fa-eye" aria-hidden="true"></i>
                             <span class="visually-hidden">Xem thông tin chi tiết</span>
                         </a>
-                        <a href="{NV_BASE_ADMINURL}index.php?{NV_LANG_VARIABLE}={NV_LANG_DATA}&{NV_NAME_VARIABLE}={MODULE_NAME}&{NV_OP_VARIABLE}=tools&action=edit&id={TOOL.id}&ajax=1" class="btn btn-outline-secondary btn-sm action-ajax" title="Sửa thông tin" aria-label="Sửa thông tin">
+                        <a href="/nukeviet/admin/index.php?nv=tool-slip-management&op=tools&action=edit&id={TOOL.id}&ajax=1" class="btn btn-outline-secondary btn-sm action-ajax" title="Sửa thông tin" aria-label="Sửa thông tin">
                             <i class="fas fa-edit" aria-hidden="true"></i>
                             <span class="visually-hidden">Sửa thông tin</span>
                         </a>
-                        <a href="{NV_BASE_ADMINURL}index.php?{NV_LANG_VARIABLE}={NV_LANG_DATA}&{NV_NAME_VARIABLE}={MODULE_NAME}&{NV_OP_VARIABLE}=tools&action=maintenance&tool_id={TOOL.id}&ajax=1" class="btn btn-outline-secondary btn-sm action-ajax" title="Tạo phiếu bảo trì" aria-label="Tạo phiếu bảo trì">
+                        <a href="/nukeviet/admin/index.php?nv=tool-slip-management&op=tools&action=maintenance&tool_id={TOOL.id}&ajax=1" class="btn btn-outline-secondary btn-sm action-ajax" title="Tạo phiếu bảo trì" aria-label="Tạo phiếu bảo trì">
                             <i class="fas fa-tools" aria-hidden="true"></i>
                             <span class="visually-hidden">Tạo phiếu bảo trì</span>
                         </a>
-                        <a href="{NV_BASE_ADMINURL}index.php?{NV_LANG_VARIABLE}={NV_LANG_DATA}&{NV_NAME_VARIABLE}={MODULE_NAME}&{NV_OP_VARIABLE}=tools&action=disposal&tool_id={TOOL.id}&ajax=1" class="btn btn-outline-secondary btn-sm action-ajax" title="Tạo phiếu huỷ" aria-label="Tạo phiếu huỷ">
+                        <a href="/nukeviet/admin/index.php?nv=tool-slip-management&op=tools&action=disposal&tool_id={TOOL.id}&ajax=1" class="btn btn-outline-secondary btn-sm action-ajax" title="Tạo phiếu huỷ" aria-label="Tạo phiếu huỷ">
                             <i class="fas fa-trash-alt" aria-hidden="true"></i>
                             <span class="visually-hidden">Tạo phiếu huỷ</span>
                         </a>
@@ -206,6 +207,7 @@
     </div>
 </div>
 <!-- END: list -->
+    </div>
 </div>
 <!-- END: list -->
 <!-- END: main -->

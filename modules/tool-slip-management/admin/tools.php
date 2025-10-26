@@ -73,6 +73,8 @@ if ($action == 'add' || $action == 'edit') {
     }
 
     if ($nv_Request->isset_request('submit', 'post')) {
+        // Debug: Log form submission
+        error_log('TOOL FORM SUBMIT - Action: ' . $action . ', ID: ' . $id);
         $array['code'] = $nv_Request->get_title('tool_code', 'post', '');
         $array['name'] = $nv_Request->get_title('name', 'post', '');
         $array['description'] = $nv_Request->get_title('description', 'post', '');
@@ -131,11 +133,15 @@ if ($action == 'add' || $action == 'edit') {
             }
             try {
                 $sth->execute();
+                // Debug: Log success
+                error_log('TOOL UPDATE SUCCESS - Action: ' . $action . ', ID: ' . $id);
                 ob_clean();
                 header('Content-Type: application/json');
                 echo json_encode(['success' => true, 'message' => 'Cập nhật thành công!']);
                 exit;
             } catch (PDOException $e) {
+                // Debug: Log error
+                error_log('TOOL UPDATE ERROR - Action: ' . $action . ', ID: ' . $id . ', Error: ' . $e->getMessage());
                 ob_clean();
                 header('Content-Type: application/json');
                 echo json_encode(['success' => false, 'message' => $e->getMessage()]);
@@ -283,8 +289,10 @@ if ($action == 'add' || $action == 'edit') {
 
     // If AJAX, return HTML
     if ($nv_Request->isset_request('ajax', 'get')) {
+    error_log('TOOL VIEW AJAX - Starting response for ID: ' . $id);
     ob_clean();
     header('Content-Type: text/html');
+    error_log('TOOL VIEW AJAX - Headers sent for ID: ' . $id);
     $view_html = '
     <div class="card shadow mb-4">
     <div class="card-body">
@@ -310,6 +318,99 @@ if ($action == 'add' || $action == 'edit') {
     echo $view_html;
     exit;
     }
+} elseif ($action == 'edit') {
+    // AJAX form for edit tool
+    if ($nv_Request->isset_request('ajax', 'get')) {
+        error_log('TOOL EDIT AJAX - ID: ' . $id);
+        ob_clean();
+        header('Content-Type: text/html');
+
+        $sql = 'SELECT * FROM ' . NV_PREFIXLANG . '_' . $module_data . '_tools WHERE id = :id';
+        $sth = $db->prepare($sql);
+        $sth->bindValue(':id', (int)$id, PDO::PARAM_INT);
+        $sth->execute();
+        $array = $sth->fetch();
+
+        if (!$array) {
+            echo '<div class="alert alert-danger">Công cụ không tồn tại</div>';
+            exit;
+        }
+
+        $array['tool_code'] = $array['code'];
+
+        // Get categories
+        $category_options = '<option value="0">-- Chọn danh mục --</option>';
+        $sql = 'SELECT id, name FROM ' . NV_PREFIXLANG . '_' . $module_data . '_categories ORDER BY name';
+        $categories = $db->query($sql)->fetchAll();
+        foreach ($categories as $cat) {
+            $selected = ($cat['id'] == $array['category_id']) ? 'selected' : '';
+            $category_options .= '<option value="' . $cat['id'] . '" ' . $selected . '>' . $cat['name'] . '</option>';
+        }
+
+        // Status options
+        $status_options_html = '';
+        $status_options = array(1 => 'Sẵn có', 2 => 'Đang mượn', 3 => 'Đang bảo trì', 4 => 'Đã thanh lý');
+        foreach ($status_options as $key => $value) {
+            $selected = ($key == $array['status']) ? 'selected' : '';
+            $status_options_html .= '<option value="' . $key . '" ' . $selected . '>' . $value . '</option>';
+        }
+
+        $form_url = '/nukeviet/admin/index.php?nv=tool-slip-management&op=tools';
+        $form_html = '
+        <form id="edit-tool-form" method="post" action="' . $form_url . '">
+        <input type="hidden" name="action" value="edit">
+        <input type="hidden" name="id" value="' . $id . '">
+        <input type="hidden" name="submit" value="submit">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="tool_code"><i class="fas fa-hashtag"></i> Mã công cụ</label>
+                        <input type="text" class="form-control" id="tool_code" name="tool_code" value="' . $array['tool_code'] . '" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="name"><i class="fas fa-tag"></i> Tên công cụ</label>
+                        <input type="text" class="form-control" id="name" name="name" value="' . $array['name'] . '" required>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="description"><i class="fas fa-align-left"></i> Mô tả</label>
+                <textarea class="form-control" id="description" name="description" rows="3">' . $array['description'] . '</textarea>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="category_id"><i class="fas fa-folder"></i> Danh mục</label>
+                        <select class="form-control" id="category_id" name="category_id" required>
+                        ' . $category_options . '
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="status"><i class="fas fa-info-circle"></i> Trạng thái</label>
+                        <select class="form-control" id="status" name="status" required>
+                        ' . $status_options_html . '
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <!-- BEGIN: error -->
+            <div class="alert alert-danger alert-dismissible fade show d-none" role="alert" id="edit-tool-error">
+                <i class="fas fa-exclamation-circle"></i> <span id="edit-tool-error-text"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <!-- END: error -->
+            <div class="form-group text-right">
+                <button type="button" class="btn btn-secondary" onclick="hideModalById(\'tsmActionModal\', null);">Hủy</button>
+                <button type="button" class="btn btn-success" onclick="submitEditForm()"><i class="fas fa-save"></i> Lưu</button>
+            </div>
+        </form>';
+        echo $form_html;
+        exit;
+    }
 } elseif ($action == 'add') {
     // AJAX form for add tool
     if ($nv_Request->isset_request('ajax', 'get')) {
@@ -328,7 +429,7 @@ if ($action == 'add' || $action == 'edit') {
             $selected = ($key == 1) ? 'selected' : '';
             $status_options_html .= '<option value="' . $key . '" ' . $selected . '>' . $value . '</option>';
         }
-        $form_url = NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name . '&' . NV_OP_VARIABLE . '=tools';
+        $form_url = '/nukeviet/admin/index.php?nv=tool-slip-management&op=tools';
         $form_html = '
         <form id="add-tool-form" method="post" action="' . $form_url . '">
         <input type="hidden" name="action" value="add">
@@ -454,6 +555,7 @@ if ($action == 'add' || $action == 'edit') {
 
     // If AJAX, return form HTML
     if ($nv_Request->isset_request('ajax', 'get')) {
+        error_log('TOOL ' . strtoupper($action) . ' AJAX - Tool ID: ' . $tool_id);
         ob_clean();
         header('Content-Type: text/html');
         $title = $action == 'maintenance' ? 'Tạo phiếu bảo trì' : 'Tạo phiếu huỷ';
@@ -479,7 +581,7 @@ if ($action == 'add' || $action == 'edit') {
                     </div>
                 </div>
                 <hr>
-                <form id="slip-form" method="post" action="">
+                <form id="slip-form" method="post" action="/nukeviet/admin/index.php?nv=tool-slip-management&op=tools">
                 <input type="hidden" name="action" value="' . $action . '">
                 <input type="hidden" name="tool_id" value="' . $tool_id . '">
                 <input type="hidden" name="submit" value="submit">

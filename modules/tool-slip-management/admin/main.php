@@ -56,16 +56,18 @@ try {
     $borrowed_tools = 0;
 }
 
+// Update overdue slips first
+$db->query("UPDATE " . NV_PREFIXLANG . '_' . $module_data . "_slips SET status = 2 WHERE status = 0 AND due_date < " . time());
+
 try {
-    $db->sqlreset()
-        ->select('COUNT(*) as overdue_slips')
-        ->from(NV_PREFIXLANG . '_' . $module_data . '_borrowing_slips')
-        ->where('status = "overdue"');
-    // Keep overdue_slips count (if needed elsewhere)
-    $overdue_slips = (int)$db->query($db->sql())->fetchColumn();
+$db->sqlreset()
+    ->select('COUNT(*) as overdue_slips')
+    ->from(NV_PREFIXLANG . '_' . $module_data . '_slips')
+        ->where('status = 2');
+$overdue_slips = (int)$db->query($db->sql())->fetchColumn();
 } catch (PDOException $e) {
-    $overdue_slips = 0;
-}
+     $overdue_slips = 0;
+ }
 
 // Count tools currently under maintenance
 try {
@@ -80,16 +82,16 @@ try {
 
 // Thống kê công cụ được mượn nhiều nhất
 try {
-    $db->sqlreset()
-        ->select('t.name, COUNT(bd.id) as borrow_count')
-        ->from(NV_PREFIXLANG . '_' . $module_data . '_borrowing_slip_details bd')
-        ->join('INNER JOIN ' . NV_PREFIXLANG . '_' . $module_data . '_tools t ON bd.tool_id = t.id')
-        ->group('bd.tool_id')
+$db->sqlreset()
+->select('t.name, COUNT(bd.id) as borrow_count')
+->from(NV_PREFIXLANG . '_' . $module_data . '_slip_details bd')
+->join('INNER JOIN ' . NV_PREFIXLANG . '_' . $module_data . '_tools t ON bd.tool_id = t.id')
+->group('bd.tool_id')
     ->order('borrow_count DESC')
     ->limit(10);
-    $most_borrowed = $db->query($db->sql())->fetchAll();
+$most_borrowed = $db->query($db->sql())->fetchAll();
 } catch (PDOException $e) {
-    $most_borrowed = array();
+$most_borrowed = array();
 }
 
 // Kiểm tra nếu module chưa cài đặt (tất cả thống kê = 0)
