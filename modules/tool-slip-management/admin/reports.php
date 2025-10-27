@@ -184,7 +184,8 @@ if (empty($borrowings)) {
 // Assign statistics (filtered or overall based on user selection)
 $xtpl->assign('TOTAL_BORROWINGS', intval($stats['total_slips'] ?? 0));
 $xtpl->assign('RETURNED_COUNT', intval($stats['returned_count'] ?? 0));
-$xtpl->assign('ACTIVE_COUNT', intval($stats['active_count'] ?? 0));
+// Đang mượn = Đang mượn + Quá hạn (status 0 + 2)
+$xtpl->assign('ACTIVE_COUNT', intval(($stats['active_count'] ?? 0) + ($stats['overdue_count'] ?? 0)));
 $xtpl->assign('OVERDUE_COUNT', intval($stats['overdue_count'] ?? 0));
 
 
@@ -193,13 +194,13 @@ $xtpl->assign('OVERDUE_COUNT', intval($stats['overdue_count'] ?? 0));
 
 // Thống kê tần suất mượn của từng loại công cụ
 try {
-    $sql = 'SELECT c.name as category_name, COUNT(bd.id) as borrow_count FROM ' . NV_PREFIXLANG . '_' . $module_data . '_borrowing_slip_details bd'
+    $sql = 'SELECT c.name as category_name, COUNT(bd.id) as borrow_count FROM ' . NV_PREFIXLANG . '_' . $module_data . '_slip_details bd'
         . ' LEFT JOIN ' . NV_PREFIXLANG . '_' . $module_data . '_tools t ON bd.tool_id = t.id'
-        . ' LEFT JOIN ' . NV_PREFIXLANG . '_' . $module_data . '_categories c ON t.category_id = c.id'
-        . ' LEFT JOIN ' . NV_PREFIXLANG . '_' . $module_data . '_slips bs ON bd.slip_id = bs.id';
+        . ' LEFT JOIN ' . NV_PREFIXLANG . '_' . $module_data . '_categories c ON t.category_id = c.id';
 
-    // Add date filter if custom filter is applied
+    // Filter by date range only if custom filter is applied
     if ($is_custom_filter) {
+        $sql .= ' LEFT JOIN ' . NV_PREFIXLANG . '_' . $module_data . '_slips bs ON bd.slip_id = bs.id';
         $sql .= ' WHERE bs.borrow_date BETWEEN :start_date AND :end_date';
     }
 
@@ -207,7 +208,7 @@ try {
 
     $stmt = $db->prepare($sql);
 
-    // Bind parameters if custom filter is applied
+    // Bind date parameters only if custom filter is applied
     if ($is_custom_filter) {
         $stmt->bindValue(':start_date', strtotime($start_date_str));
         $stmt->bindValue(':end_date', strtotime($end_date_str) + 86399);
@@ -215,6 +216,9 @@ try {
 
     $stmt->execute();
     $category_stats = $stmt->fetchAll();
+
+    // Debug: Log category stats
+    error_log('CATEGORY STATS - Count: ' . count($category_stats) . ', Is custom filter: ' . ($is_custom_filter ? 'Yes' : 'No') . ', Date range: ' . $start_date_str . ' to ' . $end_date_str);
 } catch (PDOException $e) {
     $category_stats = array();
     if (function_exists('nv_insert_logs')) {
