@@ -17,124 +17,87 @@
 <div class="container-fluid">
     
 
-<!-- Filter Section -->
-<div class="card shadow-sm mb-4">
-<div class="card-header bg-light">
-<h6 class="card-title mb-0"><i class="fas fa-filter mr-2"></i>Lọc dữ liệu theo thời gian</h6>
-    </div>
-    <div class="card-body">
-        <form id="report-filter" method="get" action="{NV_BASE_ADMINURL}index.php?{NV_NAME_VARIABLE}={MODULE_NAME}&{NV_OP_VARIABLE}=reports">
-            <div class="row g-3">
-            <div class="col-md-4">
-                <label for="start_date" class="form-label fw-semibold">
-                    <i class="fas fa-calendar mr-1 text-primary"></i>Ngày bắt đầu
-                    </label>
-                    <input type="date" class="form-control" id="start_date" name="start_date" value="{START_DATE}">
-                </div>
-
-        <div class="col-md-4">
-                <label for="end_date" class="form-label fw-semibold">
-                    <i class="fas fa-calendar mr-1 text-primary"></i>Ngày kết thúc
-                    </label>
-                    <input type="date" class="form-control" id="end_date" name="end_date" value="{END_DATE}">
-                </div>
-
-                <div class="col-md-4">
-                            <label class="form-label invisible">Action</label>
-                    <button type="button" class="btn btn-primary w-100" id="filter-btn">
-                    Lọc
-                    </button>
-                </div>
+<div class="card shadow-sm mb-3" style="padding: 10px; padding-bottom: 20px">
+    <form id="report-filter" method="get" action="{NV_BASE_ADMINURL}index.php?{NV_NAME_VARIABLE}={MODULE_NAME}&{NV_OP_VARIABLE}=reports" style="display: flex; justify-content: space-between; align-items: baseline; gap: 15px;">
+    <div style="display: flex; align-items: baseline; gap: 20px; flex-wrap: wrap;">
+    <div style="display: flex; align-items: baseline; gap: 8px;">
+        <label for="start_date" style="font-weight: bold; margin: 0; white-space: nowrap;">Ngày bắt đầu</label>
+        <input type="date" class="form-control" id="start_date" name="start_date" value="{START_DATE}" style="width: 160px;">
             </div>
-        </form>
-    </div>
+            <div style="display: flex; align-items: baseline; gap: 8px;">
+                <label for="end_date" style="font-weight: bold; margin: 0; white-space: nowrap;">Ngày kết thúc</label>
+                <input type="date" class="form-control" id="end_date" name="end_date" value="{END_DATE}" style="width: 160px;">
+               </div>
+        </div>
+<button type="button" class="btn btn-primary" id="filter-btn" style="white-space: nowrap; font-size: 16px; font-weight: bold;">Lọc</button>
+</form>
 </div>
 
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-3">
-        <div class="card border-left-primary shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Tổng phiếu mượn</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{TOTAL_BORROWINGS}</div>
-                        </div>
-                    <div class="col-auto">
-                <i class="fas fa-book fa-2x text-primary"></i>
-                </div>
-                </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-    <div class="col mr-2">
-    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Đã trả</div>
-    <div class="h5 mb-0 font-weight-bold text-gray-800">{RETURNED_COUNT}</div>
+    <div class="row mb-3">
+    <div class="col-lg-6 col-md-6 mb-3">
+        <div class="card stat-card border-left-orange h-100" style="min-height: 100px;">
+        <div class="card-body d-flex align-items-center">
+        <div class="me-3 text-start" style="display: inline-flex; align-items: center;">
+    <i class="fas fa-book fa-2x tsm-icon-total"></i><div class="text-muted small text-uppercase" style="margin-left: 15px; font-weight: bold; font-size: 18px;">Tổng phiếu mượn</div>
     </div>
-                <div class="col-auto">
-                    <i class="fas fa-check-circle fa-2x text-success"></i>
-                        </div>
-                    </div>
+    <div class="stat-number d-flex align-items-center justify-content-end ms-auto" style="font-weight: bold; font-size: 24px; margin-top: 20px;">{TOTAL_BORROWINGS}</div>
+    </div>
+    </div>
+    </div>
+    <div class="col-lg-6 col-md-6 mb-3">
+    <div class="card stat-card border-left-success h-100" style="min-height: 100px;">
+    <div class="card-body d-flex align-items-center">
+            <div class="me-3 text-start" style="display: inline-flex; align-items: center;">
+                    <i class="fas fa-check-circle fa-2x tsm-icon-available"></i><div class="text-muted small text-uppercase" style="margin-left: 15px; font-weight: bold; font-size: 18px;">Đã trả</div>
                 </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card border-left-warning shadow h-100 py-2">
-                <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                <div class="col mr-2">
-                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Đang mượn</div>
-                <div class="h5 mb-0 font-weight-bold text-gray-800">{ACTIVE_COUNT}</div>
-                </div>
-                        <div class="col-auto">
-                        <i class="fas fa-clock fa-2x text-warning"></i>
-                    </div>
-                </div>
-            </div>
+            <div class="stat-number d-flex align-items-center justify-content-end ms-auto" style="font-weight: bold; font-size: 24px; margin-top: 20px;">{RETURNED_COUNT}</div>
+    </div>
     </div>
         </div>
-        <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card border-left-danger shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Quá hạn</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{OVERDUE_COUNT}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-exclamation-triangle fa-2x text-danger"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col-lg-6 col-md-6 mb-3">
+            <div class="card stat-card border-left-warning h-100" style="min-height: 100px;">
+                <div class="card-body d-flex align-items-center">
+        <div class="me-3 text-start" style="display: inline-flex; align-items: center;">
+        <i class="fas fa-clock fa-2x tsm-icon-borrowed"></i><div class="text-muted small text-uppercase" style="margin-left: 15px; font-weight: bold; font-size: 18px;">Đang mượn</div>
         </div>
+    <div class="stat-number d-flex align-items-center justify-content-end ms-auto" style="font-weight: bold; font-size: 24px; margin-top: 20px;">{ACTIVE_COUNT}</div>
+    </div>
+    </div>
+    </div>
+    <div class="col-lg-6 col-md-6 mb-3">
+    <div class="card stat-card border-left-danger h-100" style="min-height: 100px;">
+    <div class="card-body d-flex align-items-center">
+        <div class="me-3 text-start" style="display: inline-flex; align-items: center;">
+            <i class="fas fa-exclamation-triangle fa-2x tsm-icon-overdue"></i><div class="text-muted small text-uppercase" style="margin-left: 15px; font-weight: bold; font-size: 18px;">Quá hạn</div>
+        </div>
+        <div class="stat-number d-flex align-items-center justify-content-end ms-auto" style="font-weight: bold; font-size: 24px; margin-top: 20px;">{OVERDUE_COUNT}</div>
+    </div>
+    </div>
+    </div>
     </div>
 
 <!-- Main Content -->
-    <div class="row">
-        <!-- Borrowing History -->
-        <div class="col-lg-8 mb-4">
+<div class="row">
+<!-- Borrowing History -->
+<div class="col-lg-8 mb-1">
             <div class="card shadow">
-                <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">
-            <i class="fas fa-history mr-2"></i>{LANG.borrowing_history}
-        </h6>
+                <div class="card-header py-2">
+                <h6 class="m-0 font-weight-bold text-primary" style="font-size: 18px;">
+                <i class="fas fa-history mr-2"></i>{LANG.borrowing_history}
+                </h6>
     </div>
-<div class="card-body">
+<div class="card-body" style="padding-top: 10px;">
 <div class="table-responsive">
 <table class="table table-bordered table-hover" id="borrowing-history-table">
 <thead class="table-light">
 <tr>
-<th><i class="fas fa-hashtag mr-1"></i>{LANG.slip_id}</th>
-<th><i class="fas fa-user mr-1"></i>{LANG.student}</th>
-<th><i class="fas fa-calendar-alt mr-1"></i>{LANG.borrow_date}</th>
-<th><i class="fas fa-clock mr-1"></i>{LANG.due_date}</th>
-<th><i class="fas fa-undo mr-1"></i>{LANG.return_date}</th>
-<th><i class="fas fa-info-circle mr-1"></i>{LANG.status}</th>
+<th style="font-size: 16px; font-weight: bold;"><i class="fas fa-hashtag mr-1"></i>{LANG.slip_id}</th>
+<th style="font-size: 16px; font-weight: bold;"><i class="fas fa-user mr-1"></i>{LANG.student}</th>
+<th style="font-size: 16px; font-weight: bold;"><i class="fas fa-calendar-alt mr-1"></i>{LANG.borrow_date}</th>
+<th style="font-size: 16px; font-weight: bold;"><i class="fas fa-clock mr-1"></i>{LANG.due_date}</th>
+<th style="font-size: 16px; font-weight: bold;"><i class="fas fa-undo mr-1"></i>{LANG.return_date}</th>
+<th style="font-size: 16px; font-weight: bold;"><i class="fas fa-info-circle mr-1"></i>{LANG.status}</th>
 </tr>
 </thead>
 <tbody>
@@ -178,28 +141,28 @@
 
 <!-- Sidebar -->
 <div class="col-lg-4">
-            <!-- Category Statistics -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-success">
-                        <i class="fas fa-chart-pie mr-2"></i>Thống kê theo danh mục
-                    </h6>
-                </div>
-                <div class="card-body">
+<!-- Category Statistics -->
+<div class="card shadow mb-1">
+<div class="card-header py-2">
+<h6 class="m-0 font-weight-bold text-success" style="font-size: 18px;">
+<i class="fas fa-chart-pie mr-2"></i>Thống kê theo danh mục
+</h6>
+</div>
+                <div class="card-body" style="padding-top: 10px;">
                     <div class="table-responsive">
                         <table class="table table-sm">
                             <thead class="table-light">
                                 <tr>
-                                    <th><i class="fas fa-folder mr-1"></i>Danh mục</th>
-                                    <th class="text-center"><i class="fas fa-hashtag mr-1"></i>Số lần</th>
+                                    <th style="font-size: 16px; font-weight: bold;"><i class="fas fa-folder mr-1"></i>Danh mục</th>
+                                    <th class="text-center" style="font-size: 16px; font-weight: bold;"><i class="fas fa-hashtag mr-1"></i>Số lần</th>
                                 </tr>
                             </thead>
                             <tbody>
                             <!-- BEGIN: category_stats -->
                             <tr>
                                 <td>{STAT.category_name}</td>
-                                <td class="text-center">
-                                    <span class="badge bg-primary rounded-pill">{STAT.borrow_count}</span>
+                                <td class="text-center" style="font-weight: bold; font-size: 16px;">
+                                {STAT.borrow_count}
                                 </td>
                             </tr>
                             <!-- END: category_stats -->
@@ -210,20 +173,20 @@
             </div>
 
             <!-- Overdue Slips -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-danger">
-                        <i class="fas fa-exclamation-triangle mr-2"></i>Phiếu quá hạn
-                    </h6>
-                </div>
-                <div class="card-body">
+            <div class="card shadow mb-1">
+            <div class="card-header py-2">
+            <h6 class="m-0 font-weight-bold text-danger" style="font-size: 18px;">
+            <i class="fas fa-exclamation-triangle mr-2"></i>Phiếu quá hạn
+            </h6>
+            </div>
+                <div class="card-body" style="padding-top: 10px;">
                     <div class="table-responsive">
                         <table class="table table-sm">
                             <thead class="table-light">
                                 <tr>
-                                    <th><i class="fas fa-hashtag mr-1"></i>{LANG.slip_id}</th>
-                                    <th><i class="fas fa-user mr-1"></i>Học sinh</th>
-                                    <th><i class="fas fa-clock mr-1"></i>Hạn trả</th>
+                                    <th style="font-size: 16px; font-weight: bold;"><i class="fas fa-hashtag mr-1"></i>{LANG.slip_id}</th>
+                                    <th style="font-size: 16px; font-weight: bold;"><i class="fas fa-user mr-1"></i>Học sinh</th>
+                                    <th style="font-size: 16px; font-weight: bold;"><i class="fas fa-clock mr-1"></i>Hạn trả</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -246,23 +209,23 @@
     </div>
 
     <!-- Maintenance History -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-info">
-                        <i class="fas fa-tools mr-2"></i>Lịch sử bảo trì & thanh lý
-                    </h6>
-                </div>
-                <div class="card-body">
+    <div class="row" style="margin-top: 5px;">
+    <div class="col-12">
+    <div class="card shadow">
+    <div class="card-header py-2">
+    <h6 class="m-0 font-weight-bold text-info" style="font-size: 18px;">
+    <i class="fas fa-tools mr-2"></i>Lịch sử bảo trì & thanh lý
+    </h6>
+    </div>
+                <div class="card-body" style="padding-top: 10px;">
                     <div class="table-responsive">
                         <table class="table table-bordered table-hover" id="maintenance-table">
                             <thead class="table-light">
                                 <tr>
-                                    <th><i class="fas fa-wrench mr-1"></i>Công cụ</th>
-                                    <th><i class="fas fa-cog mr-1"></i>Loại</th>
-                                    <th><i class="fas fa-comment mr-1"></i>Lý do</th>
-                                    <th><i class="fas fa-calendar-alt mr-1"></i>Ngày thực hiện</th>
+                                    <th style="font-size: 16px; font-weight: bold;"><i class="fas fa-wrench mr-1"></i>Công cụ</th>
+                                    <th style="font-size: 16px; font-weight: bold;"><i class="fas fa-cog mr-1"></i>Loại</th>
+                                    <th style="font-size: 16px; font-weight: bold;"><i class="fas fa-comment mr-1"></i>Lý do</th>
+                                    <th style="font-size: 16px; font-weight: bold;"><i class="fas fa-calendar-alt mr-1"></i>Ngày thực hiện</th>
                                 </tr>
                             </thead>
                             <tbody>

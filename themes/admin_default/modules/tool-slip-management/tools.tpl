@@ -62,34 +62,27 @@
 
 <!-- BEGIN: list -->
 <div class="card shadow mb-4">
-    <div class="card-header py-3 d-flex justify-content-between align-items-center">
-        <div></div>
-        <button type="button" class="btn btn-success btn-sm" id="btn-add-tool" aria-label="{LANG.add_tool}">
-            <i class="fas fa-plus" aria-hidden="true"></i> {LANG.add_tool}
-        </button>
+    <div class="card-header py-3" style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; gap: 15px; align-items: center;" id="tsm-filters" data-base="{NV_BASE_ADMINURL}index.php?{NV_LANG_VARIABLE}={NV_LANG_DATA}&{NV_NAME_VARIABLE}={MODULE_NAME}&{NV_OP_VARIABLE}=tools">
+        <input type="text" class="form-control form-control-sm" placeholder="{LANG.search}" id="search-q" value="{Q}" aria-label="Search" style="width: 220px; font-size: 16px;">
+        <select class="form-control form-control-sm" id="search-category" aria-label="Category" style="width: 180px; font-size: 16px;">
+        <option value="0">-- {LANG.all_categories} --</option>
+        <!-- BEGIN: category_filter -->
+        <option value="{CATEGORY.id}" {SELECTED}>{CATEGORY.name}</option>
+        <!-- END: category_filter -->
+        </select>
+        <select class="form-control form-control-sm" id="search-status" aria-label="Status" style="width: 180px; font-size: 16px;">
+        <option value="">-- {LANG.all_status} --</option>
+        <!-- BEGIN: status_filter -->
+        <option value="{STATUS_KEY}" {SELECTED}>{STATUS_VALUE}</option>
+        <!-- END: status_filter -->
+        </select>
     </div>
-    <div class="card-body">
-            <div class="row mb-3" id="tsm-filters" data-base="{NV_BASE_ADMINURL}index.php?{NV_LANG_VARIABLE}={NV_LANG_DATA}&{NV_NAME_VARIABLE}={MODULE_NAME}&{NV_OP_VARIABLE}=tools">
-            <div class="col-md-4">
-            <input type="text" class="form-control form-control-lg" placeholder="{LANG.search}" id="search-q" value="{Q}" aria-label="Search">
-            </div>
-            <div class="col-md-4">
-            <select class="form-control form-control-lg" id="search-category" aria-label="Category">
-            <option value="0">-- {LANG.all_categories} --</option>
-            <!-- BEGIN: category_filter -->
-            <option value="{CATEGORY.id}" {SELECTED}>{CATEGORY.name}</option>
-            <!-- END: category_filter -->
-            </select>
-            </div>
-            <div class="col-md-4">
-            <select class="form-control form-control-lg" id="search-status" aria-label="Status">
-            <option value="">-- {LANG.all_status} --</option>
-            <!-- BEGIN: status_filter -->
-            <option value="{STATUS_KEY}" {SELECTED}>{STATUS_VALUE}</option>
-            <!-- END: status_filter -->
-            </select>
-            </div>
-            </div>
+    <button type="button" class="btn btn-success btn-sm" id="btn-add-tool" aria-label="{LANG.add_tool}" style="white-space: nowrap;">
+    <i class="fas fa-plus" aria-hidden="true"></i> {LANG.add_tool}
+    </button>
+    </div>
+    <div class="card-body" style="margin-bottom: 20px;">
 
 <!-- BEGIN: add-form-inline -->
 <div id="addToolForm" style="display: none; margin-top: 20px; padding: 20px; border: 1px solid #ddd; background: #f9f9f9; position: relative;">
@@ -170,11 +163,11 @@
             <td><strong>{TOOL.tool_code}</strong></td>
             <td>{TOOL.name}</td>
             <td>{TOOL.category_name}</td>
-            <td>
-                <span class="badge tool-status-badge bg-{TOOL.status_class}">{TOOL.status_text}</span>
+            <td class="text-center align-middle">
+            <span class="badge tool-status-badge bg-{TOOL.status_class}">{TOOL.status_text}</span>
             </td>
-            <td>
-                    <div class="d-flex gap-2 align-items-center">
+            <td class="text-center">
+            <div class="d-flex gap-2 align-items-center justify-content-center">
                         <a href="/nukeviet/admin/index.php?nv=tool-slip-management&op=tools&action=view&id={TOOL.id}&ajax=1" class="btn btn-outline-secondary btn-sm action-ajax" title="Xem thông tin chi tiết" aria-label="Xem thông tin chi tiết">
                             <i class="fas fa-eye" aria-hidden="true"></i>
                             <span class="visually-hidden">Xem thông tin chi tiết</span>

@@ -4,12 +4,18 @@ if (!defined('NV_IS_FILE_ADMIN')) {
     die('Stop!!!');
 }
 
-// Load language
+/**
+ * Tools Management Module Admin Controller
+ * Handles CRUD operations for tools, categories, and maintenance records
+ */
+
+// Load language file
 $langfile = NV_ROOTDIR . '/modules/' . $module_file . '/language/vi.php';
 include $langfile;
 
 $page_title = $lang_module['tools_management'];
 
+// Initialize template
 $xtpl = new XTemplate('tools.tpl', NV_ROOTDIR . '/themes/' . $global_config['module_theme'] . '/modules/' . $module_file);
 $xtpl->assign('LANG', $lang_module);
 $xtpl->assign('GLANG', $lang_global);
@@ -20,16 +26,142 @@ $xtpl->assign('MODULE_NAME', $module_name);
 $xtpl->assign('OP', $op);
 $xtpl->assign('NV_BASE_SITEURL', NV_BASE_SITEURL);
 
-// CSS loaded in template
+/**
+ * Get status options array
+ * @return array Status options with keys 1-4
+ */
+function get_status_options() {
+    return array(
+        1 => 'Sẵn có',
+        2 => 'Đang mượn',
+        3 => 'Đang bảo trì',
+        4 => 'Đã thanh lý'
+    );
+}
 
-// Định nghĩa options status
-$status_options = array(1 => 'Sẵn có', 2 => 'Đang mượn', 3 => 'Đang bảo trì', 4 => 'Đã thanh lý');
+/**
+ * Get all categories from database
+ * @return array Categories array
+ */
+function get_categories() {
+    global $db, $module_data;
+    $sql = 'SELECT id, name FROM ' . NV_PREFIXLANG . '_' . $module_data . '_categories ORDER BY name';
+    return $db->query($sql)->fetchAll();
+}
 
-// Kiểm tra xem bảng có tồn tại không
-$table_name = NV_PREFIXLANG . '_' . $module_data . '_tools';
-$table_exists = $db->query("SHOW TABLES LIKE '" . $table_name . "'")->rowCount() > 0;
+/**
+ * Get status class for Bootstrap badge
+ * @param int $status Status code
+ * @return string Bootstrap class
+ */
+function get_status_class($status) {
+    $map = array(
+        1 => 'success',
+        2 => 'warning',
+        3 => 'info',
+        4 => 'danger'
+    );
+    return $map[$status] ?? 'secondary';
+}
 
-if (!$table_exists) {
+/**
+ * Ensure sample categories exist in database
+ */
+function ensure_sample_categories() {
+    global $db, $module_data;
+    $sql = 'SELECT COUNT(*) FROM ' . NV_PREFIXLANG . '_' . $module_data . '_categories';
+    $count = $db->query($sql)->fetchColumn();
+    if ($count == 0) {
+        $sample_categories = ['Máy tính', 'Văn phòng phẩm', 'Công cụ', 'Khác'];
+        foreach ($sample_categories as $name) {
+            $db->query('INSERT INTO ' . NV_PREFIXLANG . '_' . $module_data . '_categories (name) VALUES (' . $db->quote($name) . ')');
+        }
+    }
+}
+
+/**
+ * Check if tools table exists
+ * @return bool True if exists
+ */
+function check_tools_table_exists() {
+    global $db, $module_data;
+    $table_name = NV_PREFIXLANG . '_' . $module_data . '_tools';
+    return $db->query("SHOW TABLES LIKE '" . $table_name . "'")->rowCount() > 0;
+}
+
+/**
+ * Handle form validation and database operations for add/edit tool
+ * @param string $action 'add' or 'edit'
+ * @param int $id Tool ID for edit
+ * @return array Result with success/error message
+ */
+function process_tool_form($action, $id = 0) {
+    global $db, $module_data, $nv_Request, $lang_module, $admin_info;
+
+    $array = array();
+
+    // Get form data
+    $array['code'] = $nv_Request->get_title('tool_code', 'post', '');
+    $array['name'] = $nv_Request->get_title('name', 'post', '');
+    $array['description'] = $nv_Request->get_title('description', 'post', '');
+    $array['category_id'] = $nv_Request->get_int('category_id', 'post', 0);
+    $array['status'] = $nv_Request->get_int('status', 'post', 1);
+
+    // Validation
+    if (empty($array['code'])) {
+        return ['success' => false, 'message' => $lang_module['error_tool_code']];
+    }
+    if (empty($array['name'])) {
+        return ['success' => false, 'message' => $lang_module['error_name']];
+    }
+    if ($array['category_id'] == 0) {
+        return ['success' => false, 'message' => $lang_module['error_category']];
+    }
+
+    // Check code uniqueness for add
+    if ($action == 'add') {
+        $check = $db->query('SELECT COUNT(*) FROM ' . NV_PREFIXLANG . '_' . $module_data . '_tools WHERE code = ' . $db->quote($array['code']))->fetchColumn();
+        if ($check > 0) {
+            return ['success' => false, 'message' => 'Mã công cụ đã tồn tại.'];
+        }
+    }
+
+    // Check category exists
+    $check_cat = $db->query('SELECT COUNT(*) FROM ' . NV_PREFIXLANG . '_' . $module_data . '_categories WHERE id = ' . $array['category_id'])->fetchColumn();
+    if ($check_cat == 0) {
+        return ['success' => false, 'message' => 'Danh mục không tồn tại.'];
+    }
+
+    // Prepare SQL
+    if ($action == 'add') {
+        $sql = 'INSERT INTO ' . NV_PREFIXLANG . '_' . $module_data . '_tools (code, name, description, category_id, status) VALUES (?, ?, ?, ?, ?)';
+        $params = array($array['code'], $array['name'], $array['description'], $array['category_id'], $array['status']);
+    } else {
+        $sql = 'UPDATE ' . NV_PREFIXLANG . '_' . $module_data . '_tools SET code = ?, name = ?, description = ?, category_id = ?, status = ? WHERE id = ?';
+        $params = array($array['code'], $array['name'], $array['description'], $array['category_id'], $array['status'], $id);
+    }
+
+    try {
+        $sth = $db->prepare($sql);
+        $sth->execute($params);
+
+        // Log success
+        error_log('TOOL UPDATE SUCCESS - Action: ' . $action . ', ID: ' . $id);
+
+        return ['success' => true, 'message' => 'Cập nhật thành công!'];
+    } catch (PDOException $e) {
+        // Log error
+        error_log('TOOL UPDATE ERROR - Action: ' . $action . ', ID: ' . $id . ', Error: ' . $e->getMessage());
+
+        return ['success' => false, 'message' => $e->getMessage()];
+    }
+}
+
+// Initialize status options
+$status_options = get_status_options();
+
+// Check table exists
+if (!check_tools_table_exists()) {
     $xtpl->assign('MESSAGE', $lang_module['module_not_installed_message']);
     $xtpl->parse('main.not_installed');
     $contents = $xtpl->text('main');
@@ -43,23 +175,22 @@ if (!$table_exists) {
 
 
 
-// Ensure sample categories exist
-$sql = 'SELECT COUNT(*) FROM ' . NV_PREFIXLANG . '_' . $module_data . '_categories';
-$count = $db->query($sql)->fetchColumn();
-if ($count == 0) {
-    $sample_categories = ['Máy tính', 'Văn phòng phẩm', 'Công cụ', 'Khác'];
-    foreach ($sample_categories as $name) {
-        $db->query('INSERT INTO ' . NV_PREFIXLANG . '_' . $module_data . '_categories (name) VALUES (' . $db->quote($name) . ')');
-    }
-}
+// Ensure sample categories
+ensure_sample_categories();
 
-// Xử lý form thêm/sửa
-$array = array();
-$error = '';
+/**
+ * Main action processing
+ */
 $action = $nv_Request->get_title('action', 'get,post', '');
 $id = $nv_Request->get_int('id', 'get,post', 0);
+$array = array();
+$error = '';
 
+/**
+ * Handle add/edit tool actions
+ */
 if ($action == 'add' || $action == 'edit') {
+    // Load existing data for edit
     if ($action == 'edit') {
         $sql = 'SELECT * FROM ' . NV_PREFIXLANG . '_' . $module_data . '_tools WHERE id = :id';
         $sth = $db->prepare($sql);
@@ -72,82 +203,13 @@ if ($action == 'add' || $action == 'edit') {
         $array['tool_code'] = $array['code'];
     }
 
+    // Process form submission
     if ($nv_Request->isset_request('submit', 'post')) {
-        // Debug: Log form submission
-        error_log('TOOL FORM SUBMIT - Action: ' . $action . ', ID: ' . $id);
-        $array['code'] = $nv_Request->get_title('tool_code', 'post', '');
-        $array['name'] = $nv_Request->get_title('name', 'post', '');
-        $array['description'] = $nv_Request->get_title('description', 'post', '');
-        $array['category_id'] = $nv_Request->get_int('category_id', 'post', 0);
-        $array['status'] = $nv_Request->get_int('status', 'post', 1);
-
-        if (empty($array['code'])) {
-            ob_clean();
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => $lang_module['error_tool_code']]);
-            exit;
-        } elseif (empty($array['name'])) {
-            ob_clean();
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => $lang_module['error_name']]);
-            exit;
-        } elseif ($array['category_id'] == 0) {
-            ob_clean();
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => $lang_module['error_category']]);
-            exit;
-        } else {
-            if ($action == 'add') {
-                // Check if code exists
-                $check = $db->query('SELECT COUNT(*) FROM ' . NV_PREFIXLANG . '_' . $module_data . '_tools WHERE code = ' . $db->quote($array['code']))->fetchColumn();
-                if ($check > 0) {
-                    ob_clean();
-                    header('Content-Type: application/json');
-                    echo json_encode(['success' => false, 'message' => 'Mã công cụ đã tồn tại.']);
-                    exit;
-                }
-                // Check if category exists
-                $check_cat = $db->query('SELECT COUNT(*) FROM ' . NV_PREFIXLANG . '_' . $module_data . '_categories WHERE id = ' . $array['category_id'])->fetchColumn();
-                if ($check_cat == 0) {
-                    ob_clean();
-                    header('Content-Type: application/json');
-                    echo json_encode(['success' => false, 'message' => 'Danh mục không tồn tại.']);
-                    exit;
-                }
-                $sql = 'INSERT INTO ' . NV_PREFIXLANG . '_' . $module_data . '_tools (code, name, description, category_id, status) VALUES (?, ?, ?, ?, ?)';
-                $sth = $db->prepare($sql);
-                $sth->bindParam(1, $array['code'], PDO::PARAM_STR);
-                $sth->bindParam(2, $array['name'], PDO::PARAM_STR);
-                $sth->bindParam(3, $array['description'], PDO::PARAM_STR);
-                $sth->bindParam(4, $array['category_id'], PDO::PARAM_INT);
-                $sth->bindParam(5, $array['status'], PDO::PARAM_INT);
-            } else {
-                $sql = 'UPDATE ' . NV_PREFIXLANG . '_' . $module_data . '_tools SET code = ?, name = ?, description = ?, category_id = ?, status = ? WHERE id = ?';
-                $sth = $db->prepare($sql);
-                $sth->bindParam(1, $array['code'], PDO::PARAM_STR);
-                $sth->bindParam(2, $array['name'], PDO::PARAM_STR);
-                $sth->bindParam(3, $array['description'], PDO::PARAM_STR);
-                $sth->bindParam(4, $array['category_id'], PDO::PARAM_INT);
-                $sth->bindParam(5, $array['status'], PDO::PARAM_INT);
-                $sth->bindParam(6, $id, PDO::PARAM_INT);
-            }
-            try {
-                $sth->execute();
-                // Debug: Log success
-                error_log('TOOL UPDATE SUCCESS - Action: ' . $action . ', ID: ' . $id);
-                ob_clean();
-                header('Content-Type: application/json');
-                echo json_encode(['success' => true, 'message' => 'Cập nhật thành công!']);
-                exit;
-            } catch (PDOException $e) {
-                // Debug: Log error
-                error_log('TOOL UPDATE ERROR - Action: ' . $action . ', ID: ' . $id . ', Error: ' . $e->getMessage());
-                ob_clean();
-                header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'message' => $e->getMessage()]);
-                exit;
-            }
-        }
+        $result = process_tool_form($action, $id);
+        ob_clean();
+        header('Content-Type: application/json');
+        echo json_encode($result);
+        exit;
     }
 
     $xtpl->assign('ACTION', $action);
@@ -249,13 +311,17 @@ if ($action == 'add' || $action == 'edit') {
         echo $form_html;
         exit;
     }
+/**
+ * Handle view tool details action
+ */
 } elseif ($action == 'view') {
-    // View tool details
+    // Get tool with category info
     $sql = 'SELECT t.*, c.name as category_name FROM ' . NV_PREFIXLANG . '_' . $module_data . '_tools t LEFT JOIN ' . NV_PREFIXLANG . '_' . $module_data . '_categories c ON t.category_id = c.id WHERE t.id = :id';
     $sth = $db->prepare($sql);
     $sth->bindValue(':id', (int)$id, PDO::PARAM_INT);
     $sth->execute();
     $array = $sth->fetch();
+
     if (!$array) {
         if ($nv_Request->isset_request('ajax', 'get')) {
             header('Content-Type: application/json');
@@ -264,24 +330,11 @@ if ($action == 'add' || $action == 'edit') {
         }
         nv_redirect_location(NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name . '&' . NV_OP_VARIABLE . '=tools');
     }
+
+    // Prepare display data
     $array['tool_code'] = $array['code'];
     $array['status_text'] = $status_options[$array['status']] ?? $array['status'];
-    switch ($array['status']) {
-        case 1:
-            $array['status_class'] = 'success';
-            break;
-        case 2:
-            $array['status_class'] = 'warning';
-            break;
-        case 3:
-            $array['status_class'] = 'info';
-            break;
-        case 4:
-            $array['status_class'] = 'danger';
-            break;
-        default:
-            $array['status_class'] = 'secondary';
-    }
+    $array['status_class'] = get_status_class($array['status']);
     $array['added_date'] = nv_date('d/m/Y', strtotime($array['added_date'] ?? date('Y-m-d')));
 
     $xtpl->assign('TOOL', $array);
@@ -478,6 +531,9 @@ if ($action == 'add' || $action == 'edit') {
         echo $form_html;
         exit;
     }
+/**
+ * Handle maintenance/disposal actions
+ */
 } elseif ($action == 'maintenance' || $action == 'disposal') {
     // Get tool data
     $tool_id = $nv_Request->get_int('tool_id', 'get,post', 0);
@@ -599,9 +655,14 @@ if ($action == 'add' || $action == 'edit') {
         echo $form_html;
         exit;
     }
+/**
+ * Handle tools list and management actions
+ */
 } else {
-    // Danh sách tools
-    // Quick status change handler (via GET: action=change_status&id=...&status=...)
+    /**
+     * Quick status change handler
+     */
+    // Quick status change handler (via GET/POST: action=change_status&id=...&status=...)
     $get_action = $nv_Request->get_title('action', 'get', '');
     if ($get_action == 'change_status') {
         // Determine if this is an AJAX POST
