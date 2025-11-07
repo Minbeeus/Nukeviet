@@ -5602,3 +5602,129 @@
 #2 D:\xampp\htdocs\nukeviet\includes\mainfile.php(376): require('D:\\xampp\\htdocs...')
 #3 D:\xampp\htdocs\nukeviet\index.php(26): require('D:\\xampp\\htdocs...')
 #4 {main}
+[2025-11-03 15:15:11] Cron SELECT failed: SQLSTATE[HY000]: General error: 1194 Table 'nv4_cronjobs' is marked as crashed and should be repaired
+#0 D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php(544): PDO->query('SELECT * FROM n...', NULL)
+#1 D:\xampp\htdocs\nukeviet\includes\core\cronjobs.php(19): NukeViet\Core\Database->query('SELECT * FROM n...')
+#2 D:\xampp\htdocs\nukeviet\includes\mainfile.php(376): require('D:\\xampp\\htdocs...')
+#3 D:\xampp\htdocs\nukeviet\index.php(26): require('D:\\xampp\\htdocs...')
+#4 {main}
+[2025-11-03 15:15:15] Cron SELECT failed: SQLSTATE[HY000]: General error: 1194 Table 'nv4_cronjobs' is marked as crashed and should be repaired
+#0 D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php(544): PDO->query('SELECT * FROM n...', NULL)
+#1 D:\xampp\htdocs\nukeviet\includes\core\cronjobs.php(19): NukeViet\Core\Database->query('SELECT * FROM n...')
+#2 D:\xampp\htdocs\nukeviet\includes\mainfile.php(376): require('D:\\xampp\\htdocs...')
+#3 D:\xampp\htdocs\nukeviet\index.php(26): require('D:\\xampp\\htdocs...')
+#4 {main}
+[2025-11-03 15:15:16] Cron SELECT failed: SQLSTATE[HY000]: General error: 1194 Table 'nv4_cronjobs' is marked as crashed and should be repaired
+#0 D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php(544): PDO->query('SELECT * FROM n...', NULL)
+#1 D:\xampp\htdocs\nukeviet\includes\core\cronjobs.php(19): NukeViet\Core\Database->query('SELECT * FROM n...')
+#2 D:\xampp\htdocs\nukeviet\includes\mainfile.php(376): require('D:\\xampp\\htdocs...')
+#3 D:\xampp\htdocs\nukeviet\index.php(26): require('D:\\xampp\\htdocs...')
+#4 {main}
+[2025-11-03 15:15:19] Cron SELECT failed: SQLSTATE[HY000]: General error: 1194 Table 'nv4_cronjobs' is marked as crashed and should be repaired
+#0 D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php(544): PDO->query('SELECT * FROM n...', NULL)
+#1 D:\xampp\htdocs\nukeviet\includes\core\cronjobs.php(19): NukeViet\Core\Database->query('SELECT * FROM n...')
+#2 D:\xampp\htdocs\nukeviet\includes\mainfile.php(376): require('D:\\xampp\\htdocs...')
+#3 D:\xampp\htdocs\nukeviet\index.php(26): require('D:\\xampp\\htdocs...')
+#4 {main}
+[2025-11-03 15:15:23] Cron SELECT failed: SQLSTATE[HY000]: General error: 1194 Table 'nv4_cronjobs' is marked as crashed and should be repaired
+#0 D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php(544): PDO->query('SELECT * FROM n...', NULL)
+#1 D:\xampp\htdocs\nukeviet\includes\core\cronjobs.php(19): NukeViet\Core\Database->query('SELECT * FROM n...')
+#2 D:\xampp\htdocs\nukeviet\includes\mainfile.php(376): require('D:\\xampp\\htdocs...')
+#3 D:\xampp\htdocs\nukeviet\index.php(26): require('D:\\xampp\\htdocs...')
+#4 {main}
+[2025-11-03 15:15:24] Cron SELECT failed: SQLSTATE[HY000]: General error: 1194 Table 'nv4_cronjobs' is marked as crashed and should be repaired
+#0 D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php(544): PDO->query('SELECT * FROM n...', NULL)
+#1 D:\xampp\htdocs\nukeviet\includes\core\cronjobs.php(19): NukeViet\Core\Database->query('SELECT * FROM n...')
+#2 D:\xampp\htdocs\nukeviet\includes\mainfile.php(376): require('D:\\xampp\\htdocs...')
+#3 D:\xampp\htdocs\nukeviet\index.php(26): require('D:\\xampp\\htdocs...')
+#4 {main}
+[2025-11-03 15:15:25] Cron SELECT failed: SQLSTATE[HY000]: General error: 1194 Table 'nv4_cronjobs' is marked as crashed and should be repaired
+#0 D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php(544): PDO->query('SELECT * FROM n...', NULL)
+#1 D:\xampp\htdocs\nukeviet\includes\core\cronjobs.php(19): NukeViet\Core\Database->query('SELECT * FROM n...')
+#2 D:\xampp\htdocs\nukeviet\includes\mainfile.php(376): require('D:\\xampp\\htdocs...')
+#3 D:\xampp\htdocs\nukeviet\index.php(26): require('D:\\xampp\\htdocs...')
+#4 {main}
+[2025-11-03 15:15:26] Cron SELECT failed: SQLSTATE[HY000]: General error: 1194 Table 'nv4_cronjobs' is marked as crashed and should be repaired
+#0 D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php(544): PDO->query('SELECT * FROM n...', NULL)
+#1 D:\xampp\htdocs\nukeviet\includes\core\cronjobs.php(19): NukeViet\Core\Database->query('SELECT * FROM n...')
+#2 D:\xampp\htdocs\nukeviet\includes\mainfile.php(376): require('D:\\xampp\\htdocs...')
+#3 D:\xampp\htdocs\nukeviet\index.php(26): require('D:\\xampp\\htdocs...')
+#4 {main}
+[2025-11-03 15:16:57] Cron SELECT failed: SQLSTATE[HY000]: General error: 1194 Table 'nv4_cronjobs' is marked as crashed and should be repaired
+#0 D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php(544): PDO->query('SELECT * FROM n...', NULL)
+#1 D:\xampp\htdocs\nukeviet\includes\core\cronjobs.php(19): NukeViet\Core\Database->query('SELECT * FROM n...')
+#2 D:\xampp\htdocs\nukeviet\includes\mainfile.php(376): require('D:\\xampp\\htdocs...')
+#3 D:\xampp\htdocs\nukeviet\index.php(26): require('D:\\xampp\\htdocs...')
+#4 {main}
+[2025-11-03 15:17:24] Cron SELECT failed: SQLSTATE[HY000]: General error: 1194 Table 'nv4_cronjobs' is marked as crashed and should be repaired
+#0 D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php(544): PDO->query('SELECT * FROM n...', NULL)
+#1 D:\xampp\htdocs\nukeviet\includes\core\cronjobs.php(19): NukeViet\Core\Database->query('SELECT * FROM n...')
+#2 D:\xampp\htdocs\nukeviet\includes\mainfile.php(376): require('D:\\xampp\\htdocs...')
+#3 D:\xampp\htdocs\nukeviet\index.php(26): require('D:\\xampp\\htdocs...')
+#4 {main}
+[2025-11-03 15:17:27] Cron SELECT failed: SQLSTATE[HY000]: General error: 1194 Table 'nv4_cronjobs' is marked as crashed and should be repaired
+#0 D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php(544): PDO->query('SELECT * FROM n...', NULL)
+#1 D:\xampp\htdocs\nukeviet\includes\core\cronjobs.php(19): NukeViet\Core\Database->query('SELECT * FROM n...')
+#2 D:\xampp\htdocs\nukeviet\includes\mainfile.php(376): require('D:\\xampp\\htdocs...')
+#3 D:\xampp\htdocs\nukeviet\index.php(26): require('D:\\xampp\\htdocs...')
+#4 {main}
+[2025-11-03 15:17:32] Cron SELECT failed: SQLSTATE[HY000]: General error: 1194 Table 'nv4_cronjobs' is marked as crashed and should be repaired
+#0 D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php(544): PDO->query('SELECT * FROM n...', NULL)
+#1 D:\xampp\htdocs\nukeviet\includes\core\cronjobs.php(19): NukeViet\Core\Database->query('SELECT * FROM n...')
+#2 D:\xampp\htdocs\nukeviet\includes\mainfile.php(376): require('D:\\xampp\\htdocs...')
+#3 D:\xampp\htdocs\nukeviet\index.php(26): require('D:\\xampp\\htdocs...')
+#4 {main}
+[2025-11-03 15:17:33] Cron SELECT failed: SQLSTATE[HY000]: General error: 1194 Table 'nv4_cronjobs' is marked as crashed and should be repaired
+#0 D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php(544): PDO->query('SELECT * FROM n...', NULL)
+#1 D:\xampp\htdocs\nukeviet\includes\core\cronjobs.php(19): NukeViet\Core\Database->query('SELECT * FROM n...')
+#2 D:\xampp\htdocs\nukeviet\includes\mainfile.php(376): require('D:\\xampp\\htdocs...')
+#3 D:\xampp\htdocs\nukeviet\index.php(26): require('D:\\xampp\\htdocs...')
+#4 {main}
+[2025-11-03 15:17:34] Cron SELECT failed: SQLSTATE[HY000]: General error: 1194 Table 'nv4_cronjobs' is marked as crashed and should be repaired
+#0 D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php(544): PDO->query('SELECT * FROM n...', NULL)
+#1 D:\xampp\htdocs\nukeviet\includes\core\cronjobs.php(19): NukeViet\Core\Database->query('SELECT * FROM n...')
+#2 D:\xampp\htdocs\nukeviet\includes\mainfile.php(376): require('D:\\xampp\\htdocs...')
+#3 D:\xampp\htdocs\nukeviet\index.php(26): require('D:\\xampp\\htdocs...')
+#4 {main}
+[2025-11-03 15:18:39] Cron SELECT failed: SQLSTATE[HY000]: General error: 1194 Table 'nv4_cronjobs' is marked as crashed and should be repaired
+#0 D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php(544): PDO->query('SELECT * FROM n...', NULL)
+#1 D:\xampp\htdocs\nukeviet\includes\core\cronjobs.php(19): NukeViet\Core\Database->query('SELECT * FROM n...')
+#2 D:\xampp\htdocs\nukeviet\includes\mainfile.php(376): require('D:\\xampp\\htdocs...')
+#3 D:\xampp\htdocs\nukeviet\index.php(26): require('D:\\xampp\\htdocs...')
+#4 {main}
+[2025-11-03 15:18:43] Cron SELECT failed: SQLSTATE[HY000]: General error: 1194 Table 'nv4_cronjobs' is marked as crashed and should be repaired
+#0 D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php(544): PDO->query('SELECT * FROM n...', NULL)
+#1 D:\xampp\htdocs\nukeviet\includes\core\cronjobs.php(19): NukeViet\Core\Database->query('SELECT * FROM n...')
+#2 D:\xampp\htdocs\nukeviet\includes\mainfile.php(376): require('D:\\xampp\\htdocs...')
+#3 D:\xampp\htdocs\nukeviet\index.php(26): require('D:\\xampp\\htdocs...')
+#4 {main}
+[2025-11-03 15:18:48] Cron SELECT failed: SQLSTATE[HY000]: General error: 1194 Table 'nv4_cronjobs' is marked as crashed and should be repaired
+#0 D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php(544): PDO->query('SELECT * FROM n...', NULL)
+#1 D:\xampp\htdocs\nukeviet\includes\core\cronjobs.php(19): NukeViet\Core\Database->query('SELECT * FROM n...')
+#2 D:\xampp\htdocs\nukeviet\includes\mainfile.php(376): require('D:\\xampp\\htdocs...')
+#3 D:\xampp\htdocs\nukeviet\index.php(26): require('D:\\xampp\\htdocs...')
+#4 {main}
+[2025-11-03 15:18:55] Cron SELECT failed: SQLSTATE[HY000]: General error: 1194 Table 'nv4_cronjobs' is marked as crashed and should be repaired
+#0 D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php(544): PDO->query('SELECT * FROM n...', NULL)
+#1 D:\xampp\htdocs\nukeviet\includes\core\cronjobs.php(19): NukeViet\Core\Database->query('SELECT * FROM n...')
+#2 D:\xampp\htdocs\nukeviet\includes\mainfile.php(376): require('D:\\xampp\\htdocs...')
+#3 D:\xampp\htdocs\nukeviet\index.php(26): require('D:\\xampp\\htdocs...')
+#4 {main}
+[2025-11-03 15:19:12] Cron SELECT failed: SQLSTATE[HY000]: General error: 1194 Table 'nv4_cronjobs' is marked as crashed and should be repaired
+#0 D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php(544): PDO->query('SELECT * FROM n...', NULL)
+#1 D:\xampp\htdocs\nukeviet\includes\core\cronjobs.php(19): NukeViet\Core\Database->query('SELECT * FROM n...')
+#2 D:\xampp\htdocs\nukeviet\includes\mainfile.php(376): require('D:\\xampp\\htdocs...')
+#3 D:\xampp\htdocs\nukeviet\index.php(26): require('D:\\xampp\\htdocs...')
+#4 {main}
+[2025-11-03 15:19:28] Cron SELECT failed: SQLSTATE[HY000]: General error: 1194 Table 'nv4_cronjobs' is marked as crashed and should be repaired
+#0 D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php(544): PDO->query('SELECT * FROM n...', NULL)
+#1 D:\xampp\htdocs\nukeviet\includes\core\cronjobs.php(19): NukeViet\Core\Database->query('SELECT * FROM n...')
+#2 D:\xampp\htdocs\nukeviet\includes\mainfile.php(376): require('D:\\xampp\\htdocs...')
+#3 D:\xampp\htdocs\nukeviet\index.php(26): require('D:\\xampp\\htdocs...')
+#4 {main}
+[2025-11-03 15:19:34] Cron SELECT failed: SQLSTATE[HY000]: General error: 1194 Table 'nv4_cronjobs' is marked as crashed and should be repaired
+#0 D:\xampp\htdocs\nukeviet\vendor\vinades\nukeviet\Core\Database.php(544): PDO->query('SELECT * FROM n...', NULL)
+#1 D:\xampp\htdocs\nukeviet\includes\core\cronjobs.php(19): NukeViet\Core\Database->query('SELECT * FROM n...')
+#2 D:\xampp\htdocs\nukeviet\includes\mainfile.php(376): require('D:\\xampp\\htdocs...')
+#3 D:\xampp\htdocs\nukeviet\index.php(26): require('D:\\xampp\\htdocs...')
+#4 {main}
